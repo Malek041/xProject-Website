@@ -1,0 +1,87 @@
+import React from 'react';
+import { Heart } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
+import FadeIn from './FadeIn';
+
+const DonationSection = () => {
+    const { t } = useLanguage();
+
+    return (
+        <section style={{
+            padding: '8rem 0',
+            backgroundColor: 'transparent',
+            color: 'var(--color-dark)',
+            borderTop: '1px solid #eee'
+        }}>
+            <div className="container" style={{ textAlign: 'center' }}>
+                <FadeIn direction="up" distance={30}>
+                    <div style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.75rem',
+                        padding: '0.5rem 1.25rem',
+                        borderRadius: '99px',
+                        backgroundColor: '#f5f5f7',
+                        fontSize: '0.85rem',
+                        fontWeight: '600',
+                        marginBottom: '2rem',
+                        color: 'var(--color-dark)'
+                    }}>
+                        <span style={{ fontSize: '1.2rem' }}>🇲🇦</span>
+                        {t({ en: "100% Made in Morocco", fr: "100% Fabriqué au Maroc" })}
+                    </div>
+
+                    <h2 style={{
+                        fontSize: '5rem',
+                        fontWeight: '300',
+                        letterSpacing: '-0.03em',
+                        marginBottom: '1.5rem'
+                    }}>
+                        {t({
+                            en: "Support the Mission.",
+                            fr: "Soutenez la Mission."
+                        })}
+                    </h2>
+
+                    <p style={{
+                        fontSize: '1.25rem',
+                        fontWeight: '300',
+                        color: '#666',
+                        maxWidth: '600px',
+                        margin: '0 auto 3rem auto',
+                        lineHeight: '1.6'
+                    }}>
+                        {t({
+                            en: "hiro Aleph 1 is 100% built in Morocco and 100% free. Advanced versions are coming—designed to help Moroccan startups scale into global companies.",
+                            fr: "Faites un don pour soutenir le développement ultérieur des futures versions de hiro Aleph."
+                        })}
+                    </p>
+
+                    <button
+                        style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.75rem',
+                            padding: '1rem 2.5rem',
+                            backgroundColor: 'var(--color-dark)',
+                            color: '#fff',
+                            borderRadius: '99px',
+                            border: 'none',
+                            fontSize: '1.1rem',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            transition: 'transform 0.2s ease',
+                        }}
+                        onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                        onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                    >
+                        <Heart size={20} fill="currentColor" />
+                        {t({ en: "Donate Now", fr: "Donner Maintenant" })}
+                    </button>
+                </FadeIn>
+            </div>
+        </section>
+    );
+};
+
+export default DonationSection;

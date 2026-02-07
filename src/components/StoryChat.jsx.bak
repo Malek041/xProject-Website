@@ -1,0 +1,107 @@
+import React from 'react';
+import { motion } from 'framer-motion';
+import { useLanguage } from '../context/LanguageContext';
+import FadeIn from './FadeIn';
+import { MessageCircle } from 'lucide-react';
+
+const StoryChat = () => {
+    const { t } = useLanguage();
+
+    const messages = t({
+        en: [
+            {
+                id: 1,
+                role: 'system',
+                text: "The Moroccan economy suffers from a \"dual-speed reality\" where a burgeoning startup scene exists alongside an SME sector that contributes only 20% to the GDP despite representing 95% of businesses."
+            },
+            {
+                id: 2,
+                role: 'user',
+                text: "Why the massive gap?"
+            },
+            {
+                id: 3,
+                role: 'assistant',
+                text: "This discrepancy is largely due to the \"owner-dependency\" trap—a centralized management style where the founder remains the primary operational bottleneck."
+            }
+        ],
+        fr: [
+            {
+                id: 1,
+                role: 'system',
+                text: "L'économie marocaine souffre d'une « réalité à double vitesse » où une scène de startups en plein essor côtoie un secteur des PME qui ne contribue qu'à 20 % du PIB malgré le fait qu'il représente 95 % des entreprises."
+            },
+            {
+                id: 2,
+                role: 'user',
+                text: "Pourquoi un tel écart ?"
+            },
+            {
+                id: 3,
+                role: 'assistant',
+                text: "Cet écart est largement dû au piège de la « dépendance au propriétaire » — un style de gestion centralisé où le fondateur reste le principal goulot d'étranglement opérationnel."
+            }
+        ]
+    });
+
+    return (
+        <section style={{
+            padding: '10rem 0',
+            backgroundColor: 'transparent',
+            position: 'relative',
+            overflow: 'hidden'
+        }}>
+            <div className="container">
+                <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+                    <FadeIn>
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '1rem',
+                            marginBottom: '4rem',
+                            color: 'rgba(0,0,0,0.3)',
+                            fontSize: '0.9rem',
+                            fontWeight: '600',
+                            letterSpacing: '0.1em',
+                            textTransform: 'uppercase'
+                        }}>
+                            <MessageCircle size={18} />
+                            <span>{t({ en: "REALITY CHECK", fr: "ÉTAT DES LIEUX" })}</span>
+                        </div>
+                    </FadeIn>
+
+                    <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '2.5rem'
+                    }}>
+                        {messages.map((msg, index) => (
+                            <FadeIn key={msg.id} delay={index * 0.4} direction="up" distance={20}>
+                                <div style={{
+                                    display: 'flex',
+                                    justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                                    width: '100%'
+                                }}>
+                                    <div style={{
+                                        maxWidth: '85%',
+                                        padding: '2rem',
+                                        borderRadius: msg.role === 'user' ? '1.5rem' : '1.5rem',
+                                        backgroundColor: msg.role === 'user' ? 'Transparent' : 'Transparent',
+                                        color: 'var(--color-dark)',
+                                        fontSize: '1.25rem',
+                                        lineHeight: '1.6',
+                                        fontWeight: '400',
+                                    }}>
+                                        {msg.text}
+                                    </div>
+                                </div>
+                            </FadeIn>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
+};
+
+export default StoryChat;

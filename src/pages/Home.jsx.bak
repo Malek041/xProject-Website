@@ -1,0 +1,23 @@
+import React from 'react';
+import Hero from '../components/Hero';
+import Truths from '../components/Truths';
+import Framework from '../components/Framework';
+import AlephSection from '../components/AlephSection';
+import StoryChat from '../components/StoryChat';
+import StrictFilter from '../components/StrictFilter';
+import DonationSection from '../components/DonationSection';
+import Pricing from '../components/Pricing';
+
+const Home = () => {
+    return (
+        <main>
+            <Hero />
+            <Truths />
+            <AlephSection />
+            <StoryChat />
+            <DonationSection />
+        </main>
+    );
+};
+
+export default Home;

@@ -1,0 +1,751 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MessageSquare, Minimize2 } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
+import Typewriter from '../Typewriter';
+
+const ExpertBox = ({ activePhase, onPhaseChange, answers, setAnswers, deptData, setDeptData, departments, onStageChange }) => {
+    const { t } = useLanguage();
+    const [isMinimized, setIsMinimized] = useState(false);
+    const [messageHistory, setMessageHistory] = useState([]);
+    const [currentFlow, setCurrentFlow] = useState(0); // Track position in conversation flow
+    const [isThinking, setIsThinking] = useState(false);
+    const chatEndRef = useRef(null);
+
+    // Define Phase Conversation Flow
+    const defineFlow = [
+        {
+            id: 'intro',
+            type: 'narration',
+            messages: [
+                {
+                    content: t({
+                        en: "Let's start at the top.\n\nAttention is how strangers first notice you.",
+                        fr: "Commençons par le haut.\n\nL'attention est la façon dont les étrangers vous remarquent."
+                    })
+                },
+                {
+                    content: t({
+                        en: "I'll guess: outbound channels?",
+                        fr: "Je devine : canaux sortants ?"
+                    }),
+                    delay: 1500
+                }
+            ]
+        },
+        {
+            id: 'attention',
+            type: 'suggestion',
+            key: 'attention',
+            stage: 'attention',
+            question: t({
+                en: "Where does attention come from?",
+                fr: "D'où vient l'attention ?"
+            }),
+            suggestions: [
+                { value: 'LinkedIn', label: 'LinkedIn' },
+                { value: 'Cold Email', label: 'Cold Email' },
+                { value: 'Meta Ads', label: 'Meta Ads' },
+                { value: 'Google Ads', label: 'Google Ads' },
+                { value: 'Referrals', label: 'Referrals' },
+                { value: 'SEO', label: 'SEO' }
+            ],
+            allowMultiple: true,
+            reaction: (selected) => {
+                const isOutbound = selected.some(s => ['LinkedIn', 'Cold Email'].includes(s));
+                if (isOutbound) {
+                    return t({
+                        en: "Expected. Outbound means control — and responsibility.",
+                        fr: "Prévu. Sortant signifie contrôle — et responsabilité."
+                    });
+                }
+                return t({
+                    en: "Interesting mix. Let's see if it converts.",
+                    fr: "Mélange intéressant. Voyons si ça convertit."
+                });
+            }
+        },
+        {
+            id: 'enquiry_intro',
+            type: 'narration',
+            messages: [
+                {
+                    content: t({
+                        en: "Interest needs a landing point.\n\nMultiple entry points create chaos.",
+                        fr: "L'intérêt a besoin d'un point d'atterrissage.\n\nPlusieurs points d'entrée créent le chaos."
+                    })
+                }
+            ]
+        },
+        {
+            id: 'enquiry',
+            type: 'suggestion',
+            key: 'enquiry',
+            stage: 'enquiry',
+            question: t({
+                en: "Where do prospects enquire?",
+                fr: "Où les prospects se renseignent-ils ?"
+            }),
+            suggestions: [
+                { value: 'Website Form', label: 'Website Form' },
+                { value: 'Email', label: 'Email' },
+                { value: 'Phone Call', label: 'Phone Call' },
+                { value: 'WhatsApp', label: 'WhatsApp' },
+                { value: 'Instagram/DM', label: 'Instagram/DM' }
+            ],
+            allowMultiple: true,
+            challenge: (selected) => {
+                if (selected.length > 2) {
+                    return {
+                        message: t({
+                            en: "That's a lot of channels.\n\nAre you actually monitoring all of them daily?",
+                            fr: "C'est beaucoup de canaux.\n\nLes surveillez-vous vraiment tous quotidiennement ?"
+                        }),
+                        options: [
+                            { value: 'yes', label: t({ en: 'Yes', fr: 'Oui' }) },
+                            { value: 'not_really', label: t({ en: 'Not really', fr: 'Pas vraiment' }) }
+                        ]
+                    };
+                }
+                return null;
+            },
+            reaction: (selected) => {
+                return t({
+                    en: "Good. That's your first controllable bottleneck.",
+                    fr: "Bien. C'est votre premier goulot d'étranglement contrôlable."
+                });
+            }
+        },
+        {
+            id: 'sales_intro',
+            type: 'narration',
+            messages: [
+                {
+                    content: t({
+                        en: "No one buys instantly.\n\nThere's always a sequence.",
+                        fr: "Personne n'achète instantanément.\n\nIl y a toujours une séquence."
+                    })
+                },
+                {
+                    content: t({
+                        en: "Here's what I expect:",
+                        fr: "Voici ce que j'attends :"
+                    }),
+                    delay: 1200
+                }
+            ]
+        },
+        {
+            id: 'sales',
+            type: 'guided-steps',
+            key: 'sales_steps',
+            stage: 'sales',
+            question: t({
+                en: "Adjust this to reality:",
+                fr: "Ajustez ceci à la réalité :"
+            }),
+            defaultSteps: ['Discovery Call', 'Proposal', 'Agreement', 'Payment'],
+            reaction: (steps) => {
+                const hasPayment = steps.some(s => s.toLowerCase().includes('payment') || s.toLowerCase().includes('paiement'));
+                if (!hasPayment) {
+                    return t({
+                        en: "Wait — where's payment?\n\nIf money doesn't appear, this isn't a sales process.",
+                        fr: "Attendez — où est le paiement ?\n\nSi l'argent n'apparaît pas, ce n'est pas un processus de vente."
+                    });
+                }
+                return t({
+                    en: "This is now your revenue path.\n\nEverything else is noise.",
+                    fr: "C'est maintenant votre chemin de revenus.\n\nTout le reste est du bruit."
+                });
+            }
+        },
+        {
+            id: 'delivery_intro',
+            type: 'narration',
+            messages: [
+                {
+                    content: t({
+                        en: "Selling is one thing.\n\nDelivering is where reputation is made or destroyed.",
+                        fr: "Vendre est une chose.\n\nLivrer est là où la réputation se fait ou se détruit."
+                    })
+                }
+            ]
+        },
+        {
+            id: 'delivery',
+            type: 'guided-steps',
+            key: 'delivery',
+            stage: 'delivery',
+            question: t({
+                en: "How does work get completed and delivered?",
+                fr: "Comment le travail est-il complété et livré ?"
+            }),
+            defaultSteps: ['Final Review', 'Packaging', 'Handoff'],
+            reaction: () => {
+                return t({
+                    en: "Delivery clarity = client confidence.",
+                    fr: "Clarté de livraison = confiance du client."
+                });
+            }
+        },
+        {
+            id: 'money',
+            type: 'suggestion',
+            key: 'money',
+            stage: 'money',
+            question: t({
+                en: "How do you collect payment?",
+                fr: "Comment collectez-vous le paiement ?"
+            }),
+            suggestions: [
+                { value: 'Online Payment (Stripe/PayPal)', label: 'Online (Stripe/PayPal)' },
+                { value: 'Bank Transfer', label: 'Bank Transfer' },
+                { value: 'Cash', label: 'Cash' },
+                { value: 'Check', label: 'Check' }
+            ],
+            allowMultiple: true,
+            reaction: () => {
+                return t({
+                    en: "Payment friction = revenue leak.\n\nMake it effortless.",
+                    fr: "Friction de paiement = fuite de revenus.\n\nRendez-le sans effort."
+                });
+            }
+        },
+        {
+            id: 'loyalty',
+            type: 'suggestion',
+            key: 'loyalty',
+            stage: 'loyalty',
+            question: t({
+                en: "How do you encourage clients to return or refer?",
+                fr: "Comment encouragez-vous les clients à revenir ou à recommander ?"
+            }),
+            suggestions: [
+                { value: 'Referral Program', label: 'Referral Program' },
+                { value: 'Loyalty Discount', label: 'Loyalty Discount' },
+                { value: 'Follow-up Calls', label: 'Follow-up Calls' },
+                { value: 'Newsletter', label: 'Newsletter' }
+            ],
+            allowMultiple: true,
+            reaction: () => {
+                return t({
+                    en: "Retention is cheaper than acquisition.\n\nAlways.",
+                    fr: "La rétention est moins chère que l'acquisition.\n\nToujours."
+                });
+            }
+        },
+        {
+            id: 'completion',
+            type: 'narration',
+            messages: [
+                {
+                    content: t({
+                        en: "This flow is fragile — but real.",
+                        fr: "Ce flux est fragile — mais réel."
+                    })
+                },
+                {
+                    content: t({
+                        en: "Now we assign ownership.",
+                        fr: "Maintenant nous assignons la propriété."
+                    }),
+                    delay: 1500
+                }
+            ],
+            action: {
+                label: t({ en: '→ Move to Assign', fr: '→ Passer à Assigner' }),
+                onClick: () => onPhaseChange(1)
+            }
+        }
+    ];
+
+    const currentStep = defineFlow[currentFlow];
+
+    // Initialize conversation
+    useEffect(() => {
+        if (activePhase === 0 && messageHistory.length === 0) {
+            startNarration(0);
+        }
+    }, [activePhase]);
+
+    // Auto-scroll
+    useEffect(() => {
+        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messageHistory]);
+
+    const startNarration = (flowIndex) => {
+        const step = defineFlow[flowIndex];
+        if (!step) return;
+
+        if (step.type === 'narration') {
+            let delay = 0;
+            step.messages.forEach((msg, i) => {
+                setTimeout(() => {
+                    setMessageHistory(prev => [...prev, {
+                        type: 'bot',
+                        content: msg.content,
+                        id: Date.now() + i
+                    }]);
+
+                    // Auto-advance after last message
+                    if (i === step.messages.length - 1) {
+                        setTimeout(() => {
+                            setCurrentFlow(flowIndex + 1);
+                        }, msg.delay || 1500);
+                    }
+                }, delay);
+                delay += (msg.delay || 1000);
+            });
+        } else {
+            // Show question
+            setMessageHistory(prev => [...prev, {
+                type: 'bot',
+                content: step.question,
+                id: Date.now()
+            }]);
+        }
+    };
+
+    const handleSuggestionSelect = (value) => {
+        const step = currentStep;
+        if (!step || step.type !== 'suggestion') return;
+
+        let newAnswer;
+        if (step.allowMultiple) {
+            const current = answers[step.key] || [];
+            if (current.includes(value)) {
+                newAnswer = current.filter(v => v !== value);
+            } else {
+                newAnswer = [...current, value];
+            }
+        } else {
+            newAnswer = [value];
+        }
+
+        setAnswers({ ...answers, [step.key]: newAnswer });
+    };
+
+    const handleSubmit = () => {
+        const step = currentStep;
+        if (!step) return;
+
+        const answer = answers[step.key] || [];
+
+        // Add user message
+        const displayContent = Array.isArray(answer) ? answer.join(', ') : answer;
+        setMessageHistory(prev => [...prev, {
+            type: 'user',
+            content: displayContent,
+            id: Date.now()
+        }]);
+
+        // Notify canvas of stage change
+        if (step.stage && onStageChange) {
+            onStageChange(step.stage);
+        }
+
+        // Thinking pause
+        setIsThinking(true);
+
+        setTimeout(() => {
+            setIsThinking(false);
+
+            // Check for challenge
+            if (step.challenge) {
+                const challenge = step.challenge(answer);
+                if (challenge) {
+                    setMessageHistory(prev => [...prev, {
+                        type: 'bot',
+                        content: challenge.message,
+                        id: Date.now(),
+                        options: challenge.options
+                    }]);
+                    return;
+                }
+            }
+
+            // Show reaction
+            if (step.reaction) {
+                const reaction = step.reaction(answer);
+                setMessageHistory(prev => [...prev, {
+                    type: 'bot',
+                    content: reaction,
+                    id: Date.now()
+                }]);
+            }
+
+            // Move to next step
+            setTimeout(() => {
+                setCurrentFlow(currentFlow + 1);
+            }, 1500);
+        }, 800);
+    };
+
+    const handleStepsSubmit = (steps) => {
+        const step = currentStep;
+        setAnswers({ ...answers, [step.key]: steps });
+
+        // Add user message
+        const displayContent = steps.map((s, i) => `${i + 1}. ${s}`).join('\n');
+        setMessageHistory(prev => [...prev, {
+            type: 'user',
+            content: displayContent,
+            id: Date.now()
+        }]);
+
+        // Notify canvas
+        if (step.stage && onStageChange) {
+            onStageChange(step.stage);
+        }
+
+        // Thinking pause
+        setIsThinking(true);
+
+        setTimeout(() => {
+            setIsThinking(false);
+
+            // Show reaction
+            if (step.reaction) {
+                const reaction = step.reaction(steps);
+                setMessageHistory(prev => [...prev, {
+                    type: 'bot',
+                    content: reaction,
+                    id: Date.now()
+                }]);
+            }
+
+            // Move to next step
+            setTimeout(() => {
+                setCurrentFlow(currentFlow + 1);
+            }, 1500);
+        }, 800);
+    };
+
+    // Watch for flow changes
+    useEffect(() => {
+        if (currentFlow > 0 && currentFlow < defineFlow.length) {
+            const step = defineFlow[currentFlow];
+            if (step.type === 'narration') {
+                startNarration(currentFlow);
+            } else {
+                setMessageHistory(prev => [...prev, {
+                    type: 'bot',
+                    content: step.question,
+                    id: Date.now()
+                }]);
+            }
+        }
+    }, [currentFlow]);
+
+    const renderInput = () => {
+        if (!currentStep || currentStep.type === 'narration') return null;
+
+        if (currentStep.type === 'suggestion') {
+            const selected = answers[currentStep.key] || [];
+
+            return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        {currentStep.suggestions.map(sug => (
+                            <motion.button
+                                key={sug.value}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => handleSuggestionSelect(sug.value)}
+                                style={{
+                                    padding: '0.6rem 1.2rem',
+                                    borderRadius: '999px',
+                                    border: selected.includes(sug.value) ? '2px solid #000' : '1px solid #ddd',
+                                    backgroundColor: selected.includes(sug.value) ? '#000' : '#fff',
+                                    color: selected.includes(sug.value) ? '#fff' : '#333',
+                                    fontSize: '0.85rem',
+                                    cursor: 'pointer',
+                                    fontWeight: selected.includes(sug.value) ? '600' : '400',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                {sug.label}
+                            </motion.button>
+                        ))}
+                    </div>
+                    <motion.button
+                        whileTap={{ scale: 0.98 }}
+                        onClick={handleSubmit}
+                        disabled={selected.length === 0}
+                        style={{
+                            padding: '0.9rem',
+                            borderRadius: '12px',
+                            border: 'none',
+                            backgroundColor: '#000',
+                            color: '#fff',
+                            cursor: selected.length === 0 ? 'not-allowed' : 'pointer',
+                            fontSize: '0.9rem',
+                            fontWeight: '600',
+                            opacity: selected.length === 0 ? 0.3 : 1,
+                            transition: 'opacity 0.2s'
+                        }}
+                    >
+                        {t({ en: 'Submit', fr: 'Soumettre' })}
+                    </motion.button>
+                </div>
+            );
+        } else if (currentStep.type === 'guided-steps') {
+            return <GuidedStepsInput defaultSteps={currentStep.defaultSteps} onSubmit={handleStepsSubmit} t={t} />;
+        }
+
+        return null;
+    };
+
+    return (
+        <motion.div
+            drag
+            dragMomentum={false}
+            dragConstraints={{ left: -500, right: 500, top: -500, bottom: 0 }}
+            initial={{ opacity: 0, y: 50 }}
+            animate={{
+                opacity: 1,
+                y: 0,
+                width: isMinimized ? '60px' : '450px',
+                height: isMinimized ? '60px' : '600px',
+                borderRadius: isMinimized ? '30px' : '20px'
+            }}
+            style={{
+                position: 'absolute',
+                right: 30,
+                bottom: 30,
+                backgroundColor: 'white',
+                boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                zIndex: 100
+            }}
+        >
+            {/* Header */}
+            <div
+                style={{
+                    padding: '1rem',
+                    backgroundColor: isMinimized ? 'transparent' : '#f9f9fa',
+                    borderBottom: isMinimized ? 'none' : '1px solid #eee',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: isMinimized ? 'center' : 'space-between',
+                    cursor: 'grab',
+                    height: isMinimized ? '100%' : 'auto'
+                }}
+            >
+                {isMinimized ? (
+                    <div onClick={() => setIsMinimized(false)} style={{ cursor: 'pointer' }}>
+                        <MessageSquare size={24} color="#333" />
+                    </div>
+                ) : (
+                    <>
+                        <div style={{ fontWeight: '600', fontSize: '0.9rem', color: '#333', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <motion.div
+                                animate={{ scale: isThinking ? [1, 1.2, 1] : 1 }}
+                                transition={{ repeat: isThinking ? Infinity : 0, duration: 1 }}
+                                style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: isThinking ? '#ff9500' : '#10a37f' }}
+                            />
+                            Expert
+                        </div>
+                        <button onClick={() => setIsMinimized(true)} style={iconBtnStyle}>
+                            <Minimize2 size={16} />
+                        </button>
+                    </>
+                )}
+            </div>
+
+            {/* Chat Area */}
+            {!isMinimized && (
+                <>
+                    <div style={{ flex: 1, padding: '1.25rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                        <AnimatePresence>
+                            {messageHistory.map((msg, i) => (
+                                <motion.div
+                                    key={msg.id}
+                                    initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+                                    style={{
+                                        alignSelf: msg.type === 'bot' ? 'flex-start' : 'flex-end',
+                                        maxWidth: '90%',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '0.3rem'
+                                    }}
+                                >
+                                    <div style={{
+                                        backgroundColor: msg.type === 'bot' ? '#f5f5f7' : '#000',
+                                        color: msg.type === 'bot' ? '#1d1d1f' : '#fff',
+                                        padding: '1rem 1.25rem',
+                                        borderRadius: msg.type === 'bot' ? '1.25rem 1.25rem 1.25rem 0.3rem' : '1.25rem 1.25rem 0.3rem 1.25rem',
+                                        fontSize: '0.95rem',
+                                        lineHeight: '1.6',
+                                        whiteSpace: 'pre-wrap',
+                                        fontWeight: msg.type === 'bot' ? '400' : '500'
+                                    }}>
+                                        {i === messageHistory.length - 1 && msg.type === 'bot' && !msg.options ? (
+                                            <Typewriter text={msg.content} speed={15} />
+                                        ) : (
+                                            msg.content
+                                        )}
+                                    </div>
+                                    {msg.options && (
+                                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                                            {msg.options.map(opt => (
+                                                <button
+                                                    key={opt.value}
+                                                    onClick={() => {
+                                                        // Handle challenge response
+                                                        setMessageHistory(prev => [...prev, {
+                                                            type: 'user',
+                                                            content: opt.label,
+                                                            id: Date.now()
+                                                        }]);
+                                                        setTimeout(() => {
+                                                            setCurrentFlow(currentFlow + 1);
+                                                        }, 1000);
+                                                    }}
+                                                    style={{
+                                                        padding: '0.5rem 1rem',
+                                                        borderRadius: '999px',
+                                                        border: '1px solid #ddd',
+                                                        backgroundColor: '#fff',
+                                                        fontSize: '0.8rem',
+                                                        cursor: 'pointer'
+                                                    }}
+                                                >
+                                                    {opt.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {msg.action && (
+                                        <motion.button
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={msg.action.onClick}
+                                            style={{
+                                                marginTop: '1rem',
+                                                padding: '0.9rem 1.5rem',
+                                                borderRadius: '12px',
+                                                border: 'none',
+                                                backgroundColor: '#000',
+                                                color: '#fff',
+                                                fontSize: '0.9rem',
+                                                fontWeight: '600',
+                                                cursor: 'pointer'
+                                            }}
+                                        >
+                                            {msg.action.label}
+                                        </motion.button>
+                                    )}
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
+                        <div ref={chatEndRef} />
+                    </div>
+
+                    {/* Input Area */}
+                    {renderInput() && (
+                        <div style={{ padding: '1.25rem', borderTop: '1px solid #eee' }}>
+                            {renderInput()}
+                        </div>
+                    )}
+                </>
+            )}
+        </motion.div>
+    );
+};
+
+// Guided Steps Input Component
+const GuidedStepsInput = ({ defaultSteps, onSubmit, t }) => {
+    const [steps, setSteps] = useState(defaultSteps || []);
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {steps.map((step, i) => (
+                <input
+                    key={i}
+                    value={step}
+                    onChange={(e) => {
+                        const updated = [...steps];
+                        updated[i] = e.target.value;
+                        setSteps(updated);
+                    }}
+                    placeholder={`Step ${i + 1}...`}
+                    style={{
+                        width: '100%',
+                        padding: '0.8rem',
+                        borderRadius: '10px',
+                        border: '1px solid #e0e0e0',
+                        fontSize: '0.9rem',
+                        outline: 'none',
+                        backgroundColor: '#fff'
+                    }}
+                />
+            ))}
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button
+                    onClick={() => setSteps([...steps, ''])}
+                    style={{
+                        flex: 1,
+                        padding: '0.6rem',
+                        borderRadius: '10px',
+                        border: '1px dashed #ddd',
+                        backgroundColor: 'transparent',
+                        cursor: 'pointer',
+                        fontSize: '0.8rem',
+                        color: '#999'
+                    }}
+                >
+                    + Add Step
+                </button>
+                {steps.length > 1 && (
+                    <button
+                        onClick={() => setSteps(steps.slice(0, -1))}
+                        style={{
+                            padding: '0.6rem 1rem',
+                            borderRadius: '10px',
+                            border: '1px solid #fee',
+                            backgroundColor: '#fff',
+                            cursor: 'pointer',
+                            fontSize: '0.8rem',
+                            color: '#f44'
+                        }}
+                    >
+                        Remove
+                    </button>
+                )}
+            </div>
+            <motion.button
+                whileTap={{ scale: 0.98 }}
+                onClick={() => onSubmit(steps.filter(s => s.trim()))}
+                disabled={steps.filter(s => s.trim()).length === 0}
+                style={{
+                    padding: '0.9rem',
+                    borderRadius: '12px',
+                    border: 'none',
+                    backgroundColor: '#000',
+                    color: '#fff',
+                    cursor: steps.filter(s => s.trim()).length === 0 ? 'not-allowed' : 'pointer',
+                    fontSize: '0.9rem',
+                    fontWeight: '600',
+                    opacity: steps.filter(s => s.trim()).length === 0 ? 0.3 : 1
+                }}
+            >
+                {t({ en: 'Submit', fr: 'Soumettre' })}
+            </motion.button>
+        </div>
+    );
+};
+
+const iconBtnStyle = {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    color: '#999',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+};
+
+export default ExpertBox;

@@ -1,0 +1,303 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { useLanguage } from '../context/LanguageContext';
+import {
+    MousePointer,
+    Share2,
+    Code,
+    Layout,
+    Terminal,
+    Database,
+    Cpu,
+    Globe,
+    Cloud,
+    Eye,
+    Search,
+    Maximize
+} from 'lucide-react';
+
+/* ---------------- ICON BAR ---------------- */
+
+const IconBar = () => {
+    const icons = [
+        <MousePointer size={24} />,
+        <Share2 size={24} />,
+        <Code size={24} />,
+        <Layout size={24} />,
+        <Terminal size={24} />,
+        <Database size={24} />,
+        <Cpu size={24} />,
+        <Globe size={24} />,
+        <Cloud size={24} />,
+        <Eye size={24} />,
+        <Search size={24} />,
+        <Maximize size={24} />
+    ];
+
+    return (
+        <div
+            style={{
+                display: 'flex',
+                justifyContent: 'center',
+                gap: '2.5rem',
+                padding: '6rem 0',
+                opacity: 0.8,
+                flexWrap: 'wrap'
+            }}
+        >
+            {icons.map((icon, i) => (
+                <motion.div
+                    key={i}
+                    animate={{ y: [0, -15, 0] }}
+                    transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: 'easeInOut',
+                        delay: i * 0.15
+                    }}
+                    style={{
+                        padding: '1.25rem',
+                        borderRadius: '50%',
+                        backgroundColor: '#f5f5f7',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        border: '1px solid #e5e5e7'
+                    }}
+                >
+                    {icon}
+                </motion.div>
+            ))}
+        </div>
+    );
+};
+
+/* ---------------- TYPEWRITER ---------------- */
+
+const TypewriterText = ({ text }) => {
+    const [displayedText, setDisplayedText] = useState('');
+
+    useEffect(() => {
+        let index = 0;
+        setDisplayedText('');
+
+        const interval = setInterval(() => {
+            setDisplayedText((prev) => prev + text[index]);
+            index++;
+            if (index >= text.length) clearInterval(interval);
+        }, 20);
+
+        return () => clearInterval(interval);
+    }, [text]);
+
+    const isDone = displayedText.length === text.length;
+
+    return (
+        <h2
+            style={{
+                fontSize: 'clamp(2rem, 1vw, 3rem)',
+                fontWeight: '300',
+                letterSpacing: '-0.02em',
+                color: '#1d1d1f',
+                maxWidth: '1100px',
+                whiteSpace: 'pre-line',
+                lineHeight: '1.45'
+            }}
+        >
+            <span>{displayedText}</span>
+            <span
+                style={{
+                    display: 'inline-block',
+                    width: '2px',
+                    height: '1em',
+                    marginLeft: '4px',
+                    backgroundColor: '#1d1d1f',
+                    verticalAlign: 'baseline',
+                    animation: isDone ? 'none' : 'blink 1s steps(1) infinite'
+                }}
+            />
+
+            <style>
+                {`
+                @keyframes blink {
+                    0% { opacity: 1; }
+                    50% { opacity: 0; }
+                    100% { opacity: 1; }
+                }
+                `}
+            </style>
+        </h2>
+    );
+};
+
+/* ---------------- WINDOW MOCKUP ---------------- */
+
+const WindowMockup = ({ videoSrc }) => (
+    <div
+        style={{
+            width: '100%',
+            aspectRatio: '16 / 10',
+            backgroundColor: '#1e1e1e',
+            borderRadius: '0.8rem',
+            overflow: 'hidden',
+            position: 'relative',
+            boxShadow:
+                '0 30px 60px rgba(0,0,0,0.12), 0 0 1px rgba(0,0,0,0.1)'
+        }}
+    >
+        <div
+            style={{
+                height: '2.5rem',
+                backgroundColor: '#2d2d2d',
+                display: 'flex',
+                alignItems: 'center',
+                padding: '0 1.25rem',
+                gap: '0.6rem',
+                borderBottom: '1px solid rgba(255,255,255,0.05)'
+            }}
+        >
+            <div style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#ff5f56' }} />
+            <div style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#ffbd2e' }} />
+            <div style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#27c93f' }} />
+        </div>
+
+        <video
+            src={videoSrc}
+            autoPlay
+            loop
+            muted
+            playsInline
+            style={{ width: '100%', height: 'calc(100% - 2.5rem)', objectFit: 'cover' }}
+        />
+    </div>
+);
+
+/* ---------------- FEATURE ITEM ---------------- */
+
+const FeatureItem = ({ feature }) => (
+    <div
+        style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1.5fr',
+            gap: '12vw',
+            alignItems: 'start',
+            minHeight: '60vh',
+            padding: '5vh 0'
+        }}
+    >
+        <div style={{ position: 'sticky', top: '30vh' }}>
+            <motion.h3
+                style={{
+                    fontSize: 'clamp(2rem, 3vw, 4rem)',
+                    fontWeight: '350',
+                    marginBottom: '2rem',
+                    letterSpacing: '-0.04em',
+                    lineHeight: '1.1'
+                }}
+            >
+                {feature.title}
+            </motion.h3>
+
+            <TypewriterText text={feature.description} />
+        </div>
+
+        <div style={{ position: 'sticky', top: '25vh' }}>
+            <motion.div
+                initial={{ opacity: 0, scale: 0.98 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+            >
+                <WindowMockup videoSrc={feature.video} />
+            </motion.div>
+        </div>
+    </div>
+);
+
+/* ---------------- MAIN SECTION ---------------- */
+
+const AlephSection = () => {
+    const { t } = useLanguage();
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 968);
+
+    useEffect(() => {
+        const onResize = () => setIsMobile(window.innerWidth <= 968);
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, []);
+
+    const features = [
+        {
+            id: 'define',
+            title: t({ en: 'An AI IDE Core', fr: 'An AI IDE Core' }),
+            description: t({
+                en: "hiro's Editor view offers tab autocompletion, natural language code commands, and a configurable, context-aware agent that understands your entire workspace.",
+                fr: "hiro propose un éditeur avec autocomplétion, commandes en langage naturel et agents contextuels."
+            }),
+            video: '/videos/Videos for Web/It moves your through a process for web.mov'
+        },
+        {
+            id: 'assign',
+            title: t({ en: 'Higher-level Abstractions', fr: 'Higher-level Abstractions' }),
+            description: t({
+                en: 'A task-based approach to monitoring agent activity, surfacing essential artifacts and verification results.',
+                fr: 'Une approche orientée tâches pour surveiller les agents et leurs résultats.'
+            }),
+            video: '/videos/Videos for Web/Minimalistic Intefrace. An Expert Guide for Web.mov'
+        },
+        {
+            id: 'extract',
+            title: t({ en: 'Cross-surface Agents', fr: 'Cross-surface Agents' }),
+            description: t({
+                en: 'Synchronized agentic control across editor, terminal, and browser.',
+                fr: 'Contrôle agentique synchronisé entre éditeur, terminal et navigateur.'
+            }),
+            video: '/videos/Videos for Web/Optional Answers to choose from for web.mov'
+        }
+    ];
+
+    if (isMobile) {
+        return null;
+    }
+
+    return (
+        <section style={{ paddingBottom: '10vh', overflow: 'hidden' }}>
+            <div className="container" style={{ padding: '0 4rem' }}>
+                <IconBar />
+
+                <div style={{ minHeight: '60vh', padding: '10vh 0' }}>
+                    <TypewriterText
+                        text={t({
+                            en: ` hiro Aleph1 is our first model for founders of early-stage and growing companies.
+                            It guides founders to turn a founder-dependent business into a system that runs predictably without constant involvement.
+
+                            The platform breaks a business into clear responsibilities, processes, and SOPs, then structures how they connect and execute. By making work explicit and repeatable, hiro removes chaos, reduces dependency on individuals, and creates operational consistency.
+
+                            hiro is not consulting or advice.
+                            It is a system that forces clarity, discipline, and execution.
+
+                            The result:
+                            a business that works on its own, scales faster, and frees the founder to focus on growth and vision.`,
+                            fr: ` hiro Aleph1 est notre premier modèle pour les fondateurs de startups et d’entreprises en croissance.
+                            Il guide les fondateurs pour transformer une entreprise dépendante du fondateur en un système qui fonctionne de manière prévisible sans intervention constante.
+
+                            La plateforme décompose l’entreprise en responsabilités claires, processus et SOP, puis structure leurs interactions et leur exécution. En rendant le travail explicite et répétable, hiro élimine le chaos, réduit la dépendance aux individus et crée une cohérence opérationnelle.
+
+                            hiro n’est ni du conseil ni des recommandations.
+                            C’est un système qui impose clarté, discipline et exécution.
+
+                            Résultat :
+                            une entreprise qui fonctionne seule, se développe plus rapidement et libère le fondateur pour se concentrer sur la croissance et la vision.`
+                        })}
+                    />
+                </div>
+
+                {features.map((feature) => (
+                    <FeatureItem key={feature.id} feature={feature} />
+                ))}
+            </div>
+        </section>
+    );
+};
+
+export default AlephSection;

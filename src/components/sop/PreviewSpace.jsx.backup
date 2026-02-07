@@ -1,0 +1,817 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Megaphone, MessageCircle, Briefcase, Package, DollarSign, Heart, Hash, Target, Zap, Box, Layers, PenTool } from 'lucide-react';
+import ActionPlanChecklist from './ActionPlanChecklist';
+import OrganizeDashboard from './OrganizeDashboard';
+
+const PreviewSpace = ({ data, phase, showIntro, hasAnsweredFirstQuestion, onActionPlanUpdate, onStartOrganize, onIntroFinish, scrollToSection, lastActivityTs, highlightKey }) => {
+    const containerRef = useRef(null);
+    const teamRef = useRef(null);
+    const extractionRef = useRef(null);
+    const brainstormRef = useRef(null);
+    const diyRef = useRef(null);
+
+    const [activeSection, setActiveSection] = useState(null);
+
+    const scrollToRef = (ref) => {
+        if (!containerRef.current) return;
+
+        if (!ref) {
+            // Default to top if no ref (e.g. for define)
+            containerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+        }
+
+        if (ref.current) {
+            requestAnimationFrame(() => {
+                containerRef.current.scrollTo({
+                    top: ref.current.offsetTop - 120,
+                    behavior: 'smooth'
+                });
+            });
+        }
+    };
+
+    // Auto-scroll on user activity (answering questions)
+    useEffect(() => {
+        if (!lastActivityTs || !containerRef.current) return;
+
+        // Determine which section to highlight based on phase
+        if (phase === 'define') setActiveSection('ccf');
+        else if (phase === 'assign') setActiveSection('team');
+        else if (phase === 'brainstorm') setActiveSection('brainstorm');
+        else if (phase === 'extract') setActiveSection('extract');
+
+        const timer = setTimeout(() => {
+            if (phase === 'define') {
+                containerRef.current.scrollTo({
+                    top: containerRef.current.scrollHeight,
+                    behavior: 'smooth'
+                });
+            } else if (phase === 'assign') {
+                scrollToRef(teamRef);
+            } else if (phase === 'brainstorm') {
+                scrollToRef(brainstormRef);
+            } else if (phase === 'extract') {
+                scrollToRef(extractionRef);
+            }
+        }, 150);
+        return () => clearTimeout(timer);
+    }, [lastActivityTs, phase]);
+
+    useEffect(() => {
+        if (!scrollToSection) return;
+
+        const target = typeof scrollToSection === 'object' ? scrollToSection.phase : scrollToSection;
+
+        switch (target) {
+            case 'define': scrollToRef(null); break;
+            case 'assign': scrollToRef(teamRef); break;
+            case 'extract': scrollToRef(extractionRef); break;
+            case 'brainstorm': scrollToRef(brainstormRef); break;
+            case 'diy_extraction': scrollToRef(diyRef); break;
+            case 'organize': scrollToRef(null); break;
+            default: break;
+        }
+    }, [scrollToSection]);
+
+    const headingStyle = {
+        fontSize: '11px',
+        fontWeight: '700',
+        color: '#9e9e9e',
+        textTransform: 'uppercase',
+        letterSpacing: '0.15em',
+        marginBottom: '20px',
+        borderBottom: '1px solid #f0f0f0',
+        paddingBottom: '8px',
+        width: 'fit-content'
+    };
+
+    const thStyle = {
+        padding: '12px 16px',
+        fontSize: '11px',
+        fontWeight: '700',
+        color: '#9e9e9e',
+        textTransform: 'uppercase',
+        letterSpacing: '0.05em',
+        borderBottom: '1px solid #eee',
+        textAlign: 'left'
+    };
+
+    const tdStyle = {
+        padding: '16px',
+        fontSize: '14px',
+        color: '#333',
+        borderBottom: '1px solid #f8f8f8',
+        fontWeight: '450'
+    };
+
+    const tagStyle = {
+        backgroundColor: '#f5f5f5',
+        color: '#666',
+        padding: '4px 8px',
+        borderRadius: '6px',
+        fontSize: '12px',
+        border: '1px solid #eee',
+        fontWeight: '500'
+    };
+
+    // Reset intro step when phase or intro state changes
+    useEffect(() => {
+        // We defined IntroView at the bottom of the same file, 
+        // but it's part of the same component's closure or a sub-component.
+        // Actually IntroView is a sub-component defined at the end.
+    }, [phase, showIntro]);
+
+    useEffect(() => {
+        if (phase === 'assign') scrollToRef(teamRef);
+        else if (phase === 'extract') scrollToRef(extractionRef);
+        else if (phase === 'brainstorm') scrollToRef(brainstormRef);
+        else if (phase === 'diy_extraction') scrollToRef(diyRef);
+    }, [phase]);
+
+    return (
+        <div
+            ref={containerRef}
+            className="whiteboard-scroll-container"
+            style={{
+                backgroundColor: '#fff',
+                borderRadius: '0',
+                padding: '140px 50px 80px 50px',
+                width: '100%',
+                flex: 1,
+                height: '100vh',
+                overflowY: 'auto',
+                boxShadow: 'none',
+                position: 'relative',
+                backgroundImage: 'radial-gradient(#e0e0e0 0.5px, transparent 0.5px)',
+                backgroundSize: '24px 24px',
+                fontFamily: '"SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+            }}>
+            <style dangerouslySetInnerHTML={{
+                __html: `
+                .active-pulse {
+                    animation: pulse-glow 2s ease-in-out;
+                    border-radius: 8px;
+                }
+                @keyframes pulse-glow {
+                    0% { background-color: rgba(66, 133, 244, 0.05); }
+                    100% { background-color: transparent; }
+                }
+                .whiteboard-scroll-container::-webkit-scrollbar {
+                    width: 6px;
+                }
+                .whiteboard-scroll-container::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+                .whiteboard-scroll-container::-webkit-scrollbar-thumb {
+                    background: #eee;
+                    border-radius: 10px;
+                }
+                .whiteboard-scroll-container::-webkit-scrollbar-thumb:hover {
+                    background: #ddd;
+                }
+            `}} />
+
+            {/* Intros are now handled by Experimental ExpertBox directly */}
+
+            <motion.div
+                layout
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6 }}
+                style={{
+                    width: '100%',
+                    height: 'auto',
+                    minHeight: '100%',
+                    backgroundColor: 'transparent', // Remove background box to simulate whiteboard on the main canvas
+                    color: '#37352f'
+                }}
+            >
+                {/* Document Header */}
+                <AnimatePresence>
+                    {(data.ccf.coreService && !showIntro) && (
+                        <motion.header
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5 }}
+                            style={{ marginBottom: '40px' }}
+                        >
+                            <h1 style={{
+                                fontSize: '40px',
+                                fontWeight: '700',
+                                marginBottom: '10px',
+                                letterSpacing: '-0.02em',
+                                lineHeight: 1.2
+                            }}>
+                                {data.ccf.coreService}
+                            </h1>
+
+                            {data.ccf.targetClient && (
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: 0.3 }}
+                                    style={{ display: 'flex', gap: '10px', color: '#787774', fontSize: '18px', fontWeight: '450' }}
+                                >
+                                    <span>Client: {data.ccf.targetClient}</span>
+                                </motion.div>
+                            )}
+                        </motion.header>
+                    )}
+                </AnimatePresence>
+
+                {/* Content Area */}
+                <div className="document-content">
+                    {/* Define Phase Content */}
+                    <AnimatePresence>
+                        {(Object.values(data.ccf).some(v => v && (Array.isArray(v) ? v.length > 0 : true)) && data.ccf.coreService) && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className={activeSection === 'ccf' ? 'active-pulse' : ''}
+                                style={{ marginBottom: '60px', padding: '10px', margin: '-10px', transition: 'background-color 0.3s' }}
+                            >
+                                <h2 style={headingStyle}>Critical Client Flow</h2>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
+                                    {/* Attention */}
+                                    {data.ccf.attention && data.ccf.attention.length > 0 && (
+                                        <Section
+                                            title="Attention"
+                                            content={data.ccf.attention.join(', ')}
+                                            Icon={Megaphone}
+                                            isHighlighted={highlightKey === 'ccf.attention'}
+                                        />
+                                    )}
+                                    {/* Enquiry */}
+                                    {data.ccf.enquiry && data.ccf.enquiry.length > 0 && (
+                                        <Section
+                                            title="Enquiry"
+                                            content={data.ccf.enquiry.join(', ')}
+                                            Icon={MessageCircle}
+                                            isHighlighted={highlightKey === 'ccf.enquiry'}
+                                        />
+                                    )}
+                                    {/* Sales */}
+                                    {data.ccf.sales && data.ccf.sales.length > 0 && (
+                                        <Section
+                                            title="Sales Process"
+                                            content={data.ccf.sales.map((s, i) => `${i + 1}. ${s}`).join('\n')}
+                                            isList
+                                            Icon={Briefcase}
+                                            isHighlighted={highlightKey === 'ccf.sales'}
+                                        />
+                                    )}
+                                    {/* Delivery */}
+                                    {data.ccf.delivery && data.ccf.delivery.length > 0 && (
+                                        <Section
+                                            title="Delivery"
+                                            content={data.ccf.delivery.map((s, i) => `${i + 1}. ${s}`).join('\n')}
+                                            isList
+                                            Icon={Package}
+                                            isHighlighted={highlightKey === 'ccf.delivery'}
+                                        />
+                                    )}
+                                    {/* Money */}
+                                    {data.ccf.money && data.ccf.money.length > 0 && (
+                                        <Section
+                                            title="Money"
+                                            content={data.ccf.money.join(', ')}
+                                            Icon={DollarSign}
+                                            isHighlighted={highlightKey === 'ccf.money'}
+                                        />
+                                    )}
+                                    {/* Loyalty */}
+                                    {data.ccf.loyalty && data.ccf.loyalty.length > 0 && (
+                                        <Section
+                                            title="Loyalty"
+                                            content={data.ccf.loyalty.join(', ')}
+                                            Icon={Heart}
+                                            isHighlighted={highlightKey === 'ccf.loyalty'}
+                                        />
+                                    )}
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    {/* Team Structure - Persist after Assign phase */}
+                    {(phase === 'assign' || (data.departments && data.departments.length > 0 && ['extract', 'brainstorm', 'diy_extraction', 'organize'].includes(phase))) && (
+                        <div ref={teamRef} className={activeSection === 'team' ? 'active-pulse' : ''} style={{ marginBottom: '60px', padding: '10px', margin: '-10px' }}>
+                            <h2 style={headingStyle}>Team Structure</h2>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                                <thead>
+                                    <tr style={{ borderBottom: '1px solid #e0e0e0' }}>
+                                        <th style={thStyle}>Department</th>
+                                        <th style={thStyle}>Responsibilities</th>
+                                        <th style={thStyle}>Head</th>
+                                        <th style={thStyle}>Key Worker</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {data.departments.map((dept, i) => (
+                                        <tr key={i} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                                            <td style={tdStyle}>{dept.name}</td>
+                                            <td style={tdStyle}>
+                                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                                    {dept.responsibilities.map((r, ri) => (
+                                                        <span key={ri} style={tagStyle}>{r}</span>
+                                                    ))}
+                                                </div>
+                                            </td>
+                                            <td style={{ ...tdStyle, transition: 'background-color 0.5s', backgroundColor: highlightKey === `team.${i}.head` ? 'rgba(66, 133, 244, 0.1)' : 'transparent' }}>{dept.head || '---'}</td>
+                                            <td style={{ ...tdStyle, transition: 'background-color 0.5s', backgroundColor: highlightKey === `team.${i}.worker` ? 'rgba(66, 133, 244, 0.1)' : 'transparent' }}>{dept.worker || '---'}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+
+                    {/* Extract Phase Content - Systems to Extract Table */}
+                    {(phase === 'extract' || phase === 'diy_extraction') && (
+                        <div ref={extractionRef} style={{ marginBottom: '60px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '24px' }}>
+                                <h2 style={{ ...headingStyle, marginBottom: 0 }}>
+                                    <Layers size={24} /> Systems to Extract
+                                </h2>
+                                <div style={{
+                                    padding: '6px 16px',
+                                    backgroundColor: '#000',
+                                    color: '#fff',
+                                    borderRadius: '20px',
+                                    fontSize: '11px',
+                                    fontWeight: '700',
+                                    letterSpacing: '0.05em',
+                                    textTransform: 'uppercase'
+                                }}>
+                                    {(data.extractionRegistry || []).filter(i => i.method).length} / {(data.extractionRegistry || []).length} Mapped
+                                </div>
+                            </div>
+
+                            <div style={{
+                                overflow: 'auto',
+                                borderRadius: '24px',
+                                border: '1px solid #eee',
+                                backgroundColor: '#fff',
+                                boxShadow: '0 10px 40px rgba(0,0,0,0.04)'
+                            }}>
+                                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                                    <thead>
+                                        <tr style={{ backgroundColor: '#fafafa' }}>
+                                            <th style={{ ...tableHeaderStyle, paddingLeft: '32px' }}>Department</th>
+                                            <th style={tableHeaderStyle}>Responsibility</th>
+                                            <th style={tableHeaderStyle}>Sub-activity</th>
+                                            <th style={tableHeaderStyle}>Knowledge Worker</th>
+                                            <th style={tableHeaderStyle}>Method</th>
+                                            <th style={{ ...tableHeaderStyle, paddingRight: '32px' }}>Standard</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {(data.extractionRegistry || []).length > 0 ? (
+                                            data.extractionRegistry.map((item, i) => (
+                                                <tr key={i} style={{
+                                                    borderBottom: i === data.extractionRegistry.length - 1 ? 'none' : '1px solid #f5f5f5',
+                                                    backgroundColor: item.method ? '#fff' : '#fffcf5',
+                                                    transition: 'background 0.3s ease'
+                                                }}>
+                                                    <td style={{ ...tableCellStyle, paddingLeft: '32px', fontWeight: '700', fontSize: '13px' }}>{item.department}</td>
+                                                    <td style={{ ...tableCellStyle, color: '#666' }}>{item.responsibility}</td>
+                                                    <td style={{ ...tableCellStyle, color: '#000', fontWeight: '500' }}>{item.subActivity}</td>
+                                                    <td style={tableCellStyle}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                            <div style={{
+                                                                width: '26px',
+                                                                height: '26px',
+                                                                borderRadius: '50%',
+                                                                backgroundColor: '#f0f0f0',
+                                                                color: '#000',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                fontSize: '11px',
+                                                                fontWeight: '700',
+                                                                border: '1px solid #eee'
+                                                            }}>
+                                                                {item.worker ? item.worker.charAt(0).toUpperCase() : '?'}
+                                                            </div>
+                                                            <span style={{ fontSize: '13px', fontWeight: '500' }}>{item.worker || '---'}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td style={{ ...tableCellStyle, paddingRight: '0px' }}>
+                                                        {item.method ? (
+                                                            <motion.span
+                                                                initial={{ scale: 0.9, opacity: 0 }}
+                                                                animate={{ scale: 1, opacity: 1 }}
+                                                                style={{
+                                                                    display: 'inline-block',
+                                                                    padding: '4px 12px',
+                                                                    backgroundColor: '#000',
+                                                                    color: '#fff',
+                                                                    borderRadius: '20px',
+                                                                    fontSize: '10px',
+                                                                    fontWeight: '700',
+                                                                    textTransform: 'uppercase',
+                                                                    letterSpacing: '0.05em'
+                                                                }}>
+                                                                {item.method}
+                                                            </motion.span>
+                                                        ) : (
+                                                            <span style={{ color: '#999', fontSize: '12px', fontStyle: 'italic' }}>Mapping...</span>
+                                                        )}
+                                                    </td>
+                                                    <td style={{ ...tableCellStyle, paddingRight: '32px' }}>
+                                                        {item.standard || <span style={{ color: '#ccc' }}>---</span>}
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan="6" style={{ padding: '80px', textAlign: 'center' }}>
+                                                    <div style={{ fontSize: '48px', marginBottom: '16px', filter: 'grayscale(1)', opacity: 0.3 }}>🗺️</div>
+                                                    <div style={{ color: '#999', fontSize: '15px', fontWeight: '500' }}>Your extraction plan will populate here.</div>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Extraction Action Plan - Appears when mapping is complete */}
+                            <ActionPlanChecklist
+                                data={data}
+                                onUpdate={onActionPlanUpdate}
+                                onStartOrganize={onStartOrganize}
+                            />
+                        </div>
+                    )}
+                    {/* Organize Phase - SystemHUB Dashboard */}
+                    {phase === 'organize' && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.5 }}
+                            style={{ margin: '0 -40px', padding: '0 40px' }}
+                        >
+                            <OrganizeDashboard data={data} onUpdate={onActionPlanUpdate} />
+                        </motion.div>
+                    )}
+
+                    {/* Brainstorm Phase Content - High-end Operational Reality Map */}
+                    {phase === 'brainstorm' && (
+                        <div ref={brainstormRef} style={{ marginBottom: '60px' }}>
+                            <h2 style={headingStyle}>
+                                <PenTool size={24} /> Operational Reality Map
+                            </h2>
+
+                            {data.departments && data.departments.length > 0 ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '60px' }}>
+                                    {data.departments.map((dept, deptIdx) => (
+                                        <motion.div
+                                            key={deptIdx}
+                                            initial={{ opacity: 0, y: 30 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: deptIdx * 0.15 }}
+                                            style={{
+                                                backgroundColor: '#fff',
+                                                borderRadius: '32px',
+                                                border: '1px solid #f0f0f0',
+                                                padding: '40px',
+                                                boxShadow: '0 20px 50px rgba(0,0,0,0.03)',
+                                                position: 'relative'
+                                            }}
+                                        >
+                                            {/* Department Header - Prominent Node */}
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '40px' }}>
+                                                <div style={{
+                                                    width: '48px',
+                                                    height: '48px',
+                                                    backgroundColor: '#000',
+                                                    color: '#fff',
+                                                    borderRadius: '16px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    fontSize: '20px',
+                                                    fontWeight: '800',
+                                                    boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
+                                                }}>
+                                                    {dept.name.charAt(0)}
+                                                </div>
+                                                <div>
+                                                    <h3 style={{ margin: 0, fontSize: '24px', fontWeight: '800', letterSpacing: '-0.02em', color: '#000' }}>{dept.name}</h3>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                                                        <span style={{ fontSize: '13px', color: '#999', fontWeight: '600', letterSpacing: '0.05em' }}>DEPARTMENT NODE</span>
+                                                        <div style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: '#eee' }} />
+                                                        <span style={{ fontSize: '13px', color: '#666', fontWeight: '600' }}>{dept.responsibilities.length} Core Functions</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Responsibilities Grid - Spacious Layout */}
+                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '32px' }}>
+                                                {dept.responsibilities.map((resp, respIdx) => {
+                                                    const subs = dept.subActivities?.[resp] || [];
+                                                    return (
+                                                        <div key={respIdx} style={{
+                                                            padding: '24px',
+                                                            backgroundColor: '#fafafa',
+                                                            borderRadius: '20px',
+                                                            border: '1px solid #f0f0f0',
+                                                            display: 'flex',
+                                                            flexDirection: 'column',
+                                                            gap: '16px'
+                                                        }}>
+                                                            <div style={{ fontWeight: '800', fontSize: '16px', color: '#000', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                                <div style={{ width: '4px', height: '16px', backgroundColor: '#000', borderRadius: '2px' }} />
+                                                                {resp}
+                                                            </div>
+                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                                {subs.length > 0 ? subs.map((sub, subIdx) => (
+                                                                    <motion.div
+                                                                        key={subIdx}
+                                                                        whileHover={{ x: 6, backgroundColor: '#fff', borderColor: '#eee' }}
+                                                                        style={{
+                                                                            padding: '12px 16px',
+                                                                            backgroundColor: '#fff',
+                                                                            borderRadius: '12px',
+                                                                            fontSize: '13px',
+                                                                            color: '#555',
+                                                                            border: '1px solid #f0f0f0',
+                                                                            lineHeight: '1.5',
+                                                                            display: 'flex',
+                                                                            alignItems: 'flex-start',
+                                                                            gap: '12px',
+                                                                            boxShadow: '0 2px 4px rgba(0,0,0,0.01)'
+                                                                        }}>
+                                                                        <div style={{ marginTop: '8px', width: '5px', height: '5px', borderRadius: '50%', backgroundColor: '#ddd', flexShrink: 0 }} />
+                                                                        {sub}
+                                                                    </motion.div>
+                                                                )) : (
+                                                                    <div style={{ fontSize: '12px', color: '#bbb', fontStyle: 'italic', padding: '4px' }}>Defining sub-activities...</div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div style={{ padding: '80px', textAlign: 'center', border: '1px dashed #eee', borderRadius: '32px', backgroundColor: '#fafafa' }}>
+                                    <div style={{ fontSize: '48px', marginBottom: '20px', opacity: 0.3 }}>🏛️</div>
+                                    <p style={{ color: '#999', fontSize: '16px', fontWeight: '500' }}>Your operational reality will be visualized here.</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* DIY Extraction View */}
+                    {(phase === 'diy_extraction' && data.activeSystem) && (
+                        <div ref={diyRef} style={{ marginBottom: '40px' }}>
+                            <div style={{
+                                padding: '8px 12px',
+                                backgroundColor: '#f0f0f0',
+                                display: 'inline-block',
+                                borderRadius: '4px',
+                                marginBottom: '20px',
+                                fontSize: '12px',
+                                fontWeight: '600',
+                                color: '#666'
+                            }}>
+                                SYSTEM EXTRACTION IN PROGRESS
+                            </div>
+                            <h1 style={{ ...headingStyle, marginTop: 0, borderBottom: 'none' }}>
+                                {data.activeSystem.name}
+                            </h1>
+                            <hr style={{ border: 'none', borderBottom: '1px solid #e0e0e0', margin: '20px 0' }} />
+
+                            <Section title="Goal" content={data.activeSystem.goal} placeholder="Defining goal..." />
+                            <br />
+                            <Section title="Trigger" content={data.activeSystem.trigger} placeholder="Defining trigger..." />
+                            <br />
+                            <Section title="Inputs" content={data.activeSystem.inputs?.join(', ')} placeholder="Defining inputs..." />
+                            <br />
+                            <Section title="Steps" content={data.activeSystem.steps?.map((s, i) => `${i + 1}. ${s}`).join('\n')} placeholder="Defining steps..." />
+                            <br />
+                            <Section title="Tools" content={data.activeSystem.tools?.join(', ')} placeholder="Defining tools..." />
+                        </div>
+                    )}
+
+                </div>
+
+            </motion.div>
+        </div>
+    );
+};
+
+const Section = ({ title, content, placeholder, isList, Icon, isHighlighted }) => (
+    <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{
+            opacity: 1,
+            y: 0,
+            backgroundColor: isHighlighted ? 'rgba(66, 133, 244, 0.1)' : 'transparent',
+            scale: isHighlighted ? 1.02 : 1
+        }}
+        transition={{ duration: 0.4 }}
+        style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px',
+            padding: '12px',
+            margin: '-12px',
+            borderRadius: '8px',
+            transition: 'background-color 0.5s, transform 0.3s'
+        }}
+    >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {Icon && <Icon size={18} color="#9ca3af" />}
+            <h3 style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                textTransform: 'uppercase',
+                letterSpacing: '0.1em',
+                color: '#9ca3af',
+                margin: 0
+            }}>
+                {title}
+            </h3>
+        </div>
+        <div style={{
+            fontSize: '18px', // Slightly larger
+            color: '#1f2937',
+            minHeight: '28px',
+            borderBottom: '1px solid transparent',
+            whiteSpace: 'pre-wrap',
+            lineHeight: '1.6',
+            paddingLeft: Icon ? '28px' : '0'
+        }}>
+            <TypewriterText content={content} />
+        </div>
+    </motion.div>
+);
+
+const TypewriterText = ({ content }) => {
+    // Determine if content changed significantly or is new
+    // Simple implementation: Key by content length or content itself to force re-render
+    return (
+        <React.Fragment key={content.length}>
+            <motion.span
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+            >
+                {/* We use a simple fade in for the block or we can use the Typewriter component if we import it.
+                    The user asked for "like using the typewriter animation".
+                    Since Typewriter is text-by-text, it might be slow for long text.
+                    Let's use a faster char-by-char or word-by-word reveal.
+                */}
+                <TypewriterEffect content={content} />
+            </motion.span>
+        </React.Fragment>
+    );
+};
+
+const TypewriterEffect = ({ content, onComplete, speed = 10 }) => {
+    const [displayed, setDisplayed] = useState('');
+
+    useEffect(() => {
+        let index = 0;
+        setDisplayed('');
+        const interval = setInterval(() => {
+            if (index < content.length) {
+                setDisplayed(prev => prev + content.charAt(index));
+                index++;
+            } else {
+                clearInterval(interval);
+                if (onComplete) onComplete();
+            }
+        }, speed);
+        return () => clearInterval(interval);
+    }, [content, speed]);
+
+    return <>{displayed}</>;
+};
+
+const IntroView = ({ onIntroFinish, phase }) => {
+    const [step, setStep] = useState(0);
+
+    // Reset step whenever phase changes
+    useEffect(() => {
+        setStep(0);
+    }, [phase]);
+
+    const contentMap = {
+        define: {
+            text1: "Whether your business is doing well or struggling depends on how you turn inputs into valuable outputs—your systems.",
+            text2: "We’ll start by defining the systems that make you money.",
+            bold: "Cash is king. Survival first."
+        },
+        assign: {
+            text1: "A business is only as good as its people. Systems without accountability are just words on a page.",
+            text2: "Now, we’ll move from 'What' to 'Who'. Let's assign clear ownership to every department.",
+            bold: "Responsibility breeds success."
+        },
+        extract: {
+            text1: "Documentation is the bridge between a chaotic startup and a scalable machine.",
+            text2: "It’s time to extract the wisdom from your team and turn it into permanent assets.",
+            bold: "Documentation is leverage."
+        },
+        organize: {
+            text1: "Structure breeds freedom. A well-organized system allows the business to run without the founder.",
+            text2: "We’ll now organize these systems into a clear architecture that anyone can follow.",
+            bold: "Freedom starts here."
+        }
+    };
+
+    const current = contentMap[phase] || contentMap.define;
+
+    useEffect(() => {
+        if (step === 2) {
+            // Signal SOPBuilder that intro is complete if needed,
+            // but for define phase we already triggered it on goal select.
+            if (onIntroFinish) onIntroFinish();
+        }
+    }, [step]);
+
+    return (
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, filter: 'blur(10px)' }}
+            transition={{ duration: 0.8 }}
+            style={{
+                position: 'fixed', // Changed from absolute to fixed to ensure it's on top of everything
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '100%',
+                maxWidth: '800px',
+                textAlign: 'left',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '40px',
+                padding: '0 40px',
+                zIndex: 2000, // Increased z-index significantly
+                pointerEvents: 'none',
+                color: '#000' // Force color
+            }}
+        >
+            <div style={{
+                width: '100%',
+                maxWidth: '900px',
+                textAlign: 'left',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '40px',
+                padding: '0 40px'
+            }}>
+                <h1 style={{
+                    fontSize: '36px',
+                    fontWeight: '300',
+                    color: '#000',
+                    lineHeight: '1.4',
+                    letterSpacing: '-0.01em',
+                    margin: 0,
+                    opacity: 0.9
+                }}>
+                    <TypewriterEffect content={current.text1} onComplete={() => setStep(1)} speed={20} />
+                </h1>
+
+                {step >= 1 && (
+                    <h1 style={{
+                        fontSize: '36px',
+                        fontWeight: '300',
+                        color: '#000',
+                        lineHeight: '1.4',
+                        letterSpacing: '-0.01em',
+                        margin: 0
+                    }}>
+                        <TypewriterEffect content={current.text2} onComplete={() => setStep(2)} speed={20} />
+                        {step >= 2 && current.bold && (
+                            <motion.strong
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                style={{
+                                    display: 'block',
+                                    marginTop: '12px',
+                                    color: '#000',
+                                    fontWeight: '700'
+                                }}
+                            >
+                                {current.bold}
+                            </motion.strong>
+                        )}
+                    </h1>
+                )}
+
+                {/* No button needed here, as ExpertBox handles "Ready?" */}
+            </div>
+        </motion.div>
+    );
+};
+
+export default PreviewSpace;

@@ -1,0 +1,1070 @@
+import React, { useState, useEffect } from 'react';
+import ExpertBox from '../components/sop/ExpertBox';
+import PreviewSpace from '../components/sop/PreviewSpace';
+import PhaseProgress from '../components/sop/PhaseProgress';
+import HiroorModal from '../components/sop/HiroorModal';
+import AppSidebar from '../components/sop/AppSidebar';
+import FloatingProgressBar from '../components/sop/FloatingProgressBar';
+import GoalSelection from '../components/sop/GoalSelection';
+
+const getTaskExamples = (responsibility = '') => {
+    const res = responsibility.toLowerCase();
+    if (res.includes('marketing') || res.includes('attention')) return "Facebook Post, Email Blast, SEO Audit";
+    if (res.includes('sales')) return "Lead Qualification, Demo Call, Proposal Writing";
+    if (res.includes('delivery')) return "Order Processing, Quality Check, Shipping";
+    if (res.includes('finance') || res.includes('money')) return "Invoicing, Expense Tracking, Bank Recon";
+    return "Task 1, Task 2, Task 3";
+};
+
+const initialDocumentData = {
+    ccf: {},
+    departments: [],
+    responsibilities: {},
+    team: {},
+    systems: [],
+    activeExtractionPlan: {
+        targetSystem: null,
+        knowledgeableWorker: null,
+        captureMethod: null,
+        timeline: null,
+        status: 'planning'
+    },
+    activeSystem: null,
+    extractionRegistry: [],
+    extractionActionPlan: {
+        champion: false,
+        worker: false,
+        capture: false,
+        review: false,
+        finalize: false
+    }
+};
+
+const SOPBuilder = () => {
+    // Layout State
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [projects, setProjects] = useState(() => {
+        const saved = localStorage.getItem('hiro_projects');
+        return saved ? JSON.parse(saved) : [];
+    });
+    const [currentProjectId, setCurrentProjectId] = useState(null);
+
+    // Core State
+    const [phase, setPhase] = useState('define'); // define, assign, extract, organize
+    const [isGoalSelected, setIsGoalSelected] = useState(false); // Start false to show mission selection
+    const [selectedGoal, setSelectedGoal] = useState(null);
+    const [showIntro, setShowIntro] = useState(false); // Start false to prevent overriding mission selection
+    const [introFinished, setIntroFinished] = useState(false);
+    const [hasAnsweredFirstQuestion, setHasAnsweredFirstQuestion] = useState(false);
+    const [navTarget, setNavTarget] = useState(null);
+    const [lastActivityTs, setLastActivityTs] = useState(0);
+    const [highlightKey, setHighlightKey] = useState(null);
+    const [showHiroorModal, setShowHiroorModal] = useState(false); // hiroor marketplace
+    const [documentData, setDocumentData] = useState(initialDocumentData);
+
+
+    // Expert State
+    const [expertState, setExpertState] = useState({
+        isOpen: true,
+        message: "Welcome to hiro. What's your Goal today?",
+        inputType: 'goal-selection',
+        inputAction: 'select_goal',
+        isTyping: false,
+        history: []
+    });
+
+    // Save projects to localStorage whenever they change
+    useEffect(() => {
+        localStorage.setItem('hiro_projects', JSON.stringify(projects));
+    }, [projects]);
+
+    // Auto-save current project state whenever relevant state changes
+    useEffect(() => {
+        if (!currentProjectId) return;
+
+        setProjects(prev => {
+            const index = prev.findIndex(p => String(p.id) === String(currentProjectId));
+            if (index === -1) return prev; // Project was likely deleted
+
+            const updated = [...prev];
+            updated[index] = {
+                ...updated[index],
+                data: {
+                    phase,
+                    documentData,
+                    expertState
+                }
+            };
+            return updated;
+        });
+    }, [phase, documentData, expertState, currentProjectId]);
+
+    // Initialize
+    useEffect(() => {
+        // Initialization logic if needed
+    }, []);
+
+    const handleIntroStart = () => {
+        setShowIntro(false);
+        setHasAnsweredFirstQuestion(true);
+        setExpertState(prev => ({ ...prev, isOpen: true }));
+
+        // Trigger logic based on the phase we just saw the intro for
+        if (phase === 'define') startDefinePhase();
+        else if (phase === 'assign') startAssignPhase();
+        else if (phase === 'extract') startExtractPhase();
+        else if (phase === 'organize') {
+            // Placeholder for startOrganizePhase()
+            setExpertState(prev => ({ ...prev, message: "Let's organize your exported systems into a clear architecture." }));
+        }
+    };
+
+    // Auto-transition logic
+
+
+    // Clear highlight after 3 seconds
+    useEffect(() => {
+        if (highlightKey) {
+            const timer = setTimeout(() => setHighlightKey(null), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [highlightKey]);
+
+
+
+    const handleNewProject = () => {
+        const newProject = {
+            id: Date.now().toString(),
+            name: 'New Project',
+            createdAt: new Date().toISOString(),
+            data: {
+                phase: 'define',
+                documentData: {
+                    ccf: {},
+                    departments: [],
+                    responsibilities: {},
+                    team: {},
+                    systems: [],
+                    activeExtractionPlan: {
+                        targetSystem: null,
+                        knowledgeableWorker: null,
+                        captureMethod: null,
+                        timeline: null,
+                        status: 'planning'
+                    },
+                    activeSystem: null,
+                    extractionRegistry: []
+                }
+            }
+        };
+
+        setProjects(prev => [newProject, ...prev]);
+        setCurrentProjectId(newProject.id);
+
+        // Reset states for new project flow
+        setIsGoalSelected(false);
+        setHasAnsweredFirstQuestion(false);
+        setIntroFinished(false);
+        setIntroFinished(false);
+        setShowIntro(false); // Don't show intro immediately, let user pick goal first
+        setPhase('define');
+        setDocumentData(newProject.data.documentData);
+        setExpertState({
+            isOpen: true,
+            message: "Welcome to hiro. What's your Goal today?",
+            inputType: 'goal-selection',
+            inputAction: 'select_goal',
+            options: [],
+            isTyping: false,
+            history: []
+        });
+    };
+
+    const handleSelectProject = (projectId) => {
+        const project = projects.find(p => p.id === projectId);
+        if (!project) return;
+
+        setCurrentProjectId(projectId);
+
+        // Restore state from project data
+        // If it's an old project that doesn't have the full data structure yet, 
+        // fallback to defaults
+        const data = project.data || {};
+        const restoredPhase = data.phase || 'define';
+
+        // CRITICAL FIX: Normalize documentData against initial schema
+        // Merging prevents "undefined" errors if saved data is partial
+        const restoredDocData = {
+            ...initialDocumentData,
+            ...(data.documentData || {}),
+            departments: (data.documentData?.departments || []),
+            extractionRegistry: (data.documentData?.extractionRegistry || [])
+        };
+
+        setPhase(restoredPhase);
+        setDocumentData(restoredDocData);
+        setIsGoalSelected(true);
+        setHasAnsweredFirstQuestion(true);
+        setIntroFinished(true);
+        setShowIntro(false);
+
+        setExpertState(prev => ({
+            ...prev,
+            isOpen: true, // Force open to be safe
+            ...(data.expertState || {}),
+            options: data.expertState?.options || [], // Ensure array
+        }));
+
+        // Since it's an existing project, we skip the goal selection and intro
+        setIsGoalSelected(true);
+        setHasAnsweredFirstQuestion(true);
+        setIntroFinished(true);
+        setShowIntro(false);
+    };
+
+    const handleRemoveProject = (projectId) => {
+        console.log('Removing project:', projectId);
+        setProjects(prev => {
+            const filtered = prev.filter(p => String(p.id) !== String(projectId));
+            console.log('Remaining projects:', filtered.length);
+            return filtered;
+        });
+
+        if (String(currentProjectId) === String(projectId)) {
+            setCurrentProjectId(null);
+
+            // Just reset the local builder state
+            setPhase('define');
+            setShowIntro(true);
+            setDocumentData({
+                ccf: {},
+                departments: [],
+                responsibilities: {},
+                team: {},
+                systems: [],
+                activeExtractionPlan: {
+                    status: 'planning'
+                },
+                activeSystem: null,
+                extractionRegistry: []
+            });
+            setExpertState({
+                isOpen: false,
+                message: "",
+                options: [],
+                isTyping: false,
+                history: []
+            });
+        }
+    };
+
+    const handleRenameProject = (projectId, newName) => {
+        setProjects(prev => prev.map(p =>
+            String(p.id) === String(projectId) ? { ...p, name: newName } : p
+        ));
+    };
+
+    const deriveSystems = (ccfData) => {
+        // Simple logic to suggest systems based on CCF inputs
+        const systems = [];
+        if (ccfData.sales) systems.push({ name: "Sales Process", status: "To Do" });
+        if (ccfData.delivery) systems.push({ name: "Delivery Workflow", status: "To Do" });
+        if (ccfData.attention) systems.push({ name: "Lead Generation", status: "To Do" });
+        return systems;
+    };
+
+    const startBrainstorm = () => {
+        setPhase('brainstorm');
+
+        // Check if we have departments with responsibilities
+        const depts = documentData.departments;
+        if (!depts || depts.length === 0) {
+            // No departments, skip
+            return;
+        }
+
+        // Initialize subActivities if not present
+        const deptsWithSubActivities = depts.map(dept => ({
+            ...dept,
+            subActivities: dept.subActivities || {}
+        }));
+        setDocumentData(prev => ({ ...prev, departments: deptsWithSubActivities }));
+
+        // Start asking for sub-activities for the first department's first responsibility
+        // Use the updated departments directly
+        const firstDept = deptsWithSubActivities[0];
+        const firstResp = firstDept.responsibilities[0];
+
+        setExpertState(prev => ({
+            ...prev,
+            message: `For **${firstDept.name}** → **${firstResp}**, what are the specific sub-activities or tasks involved?\n\nList them one by one (e.g., ${getTaskExamples(firstResp)}).`,
+            inputType: 'dynamic-steps',
+            inputAction: `add_subactivities_0_0`,
+            placeholderType: 'sub-activity',
+            options: [],
+            initialSteps: firstDept.subActivities[firstResp] || []
+        }));
+    };
+
+    const askSubActivities = (deptIndex, respIndex) => {
+        const dept = documentData.departments[deptIndex];
+        if (!dept) {
+            console.error('Department not found at index:', deptIndex);
+            return;
+        }
+
+        const responsibilities = dept.responsibilities;
+        if (!responsibilities || responsibilities.length === 0) {
+            console.error('No responsibilities found for department:', dept.name);
+            return;
+        }
+
+        if (respIndex >= responsibilities.length) {
+            // Move to next department
+            if (deptIndex + 1 < documentData.departments.length) {
+                askSubActivities(deptIndex + 1, 0);
+            } else {
+                // All done, start assigning extraction methods
+                startExtractionMethodAssignment();
+            }
+            return;
+        }
+
+        const responsibility = responsibilities[respIndex];
+        setExpertState(prev => ({
+            ...prev,
+            message: `For **${dept.name}** → **${responsibility}**, what are the specific sub-activities or tasks involved?\n\nList them one by one (e.g., ${getTaskExamples(responsibility)}).`,
+            inputType: 'dynamic-steps',
+            inputAction: `add_subactivities_${deptIndex}_${respIndex}`,
+            placeholderType: 'sub-activity',
+            options: [],
+            initialSteps: dept.subActivities[responsibility] || []
+        }));
+    };
+
+    const startExtractionMethodAssignment = () => {
+        // Flatten all sub-activities into a registry list
+        const registry = [];
+        documentData.departments.forEach(dept => {
+            Object.keys(dept.subActivities || {}).forEach(resp => {
+                const head = dept.head || 'To be assigned';
+                const worker = dept.worker || 'To be assigned';
+                dept.subActivities[resp].forEach(sub => {
+                    registry.push({
+                        department: dept.name,
+                        responsibility: resp,
+                        subActivity: sub,
+                        worker: worker,
+                        method: null
+                    });
+                });
+            });
+        });
+
+        if (registry.length === 0) {
+            setPhase('extract');
+            setExpertState(prev => ({ ...prev, message: "We haven't identified any sub-activities yet. Let's go back and add some." }));
+            return;
+        }
+
+        setDocumentData(prev => ({ ...prev, extractionRegistry: registry }));
+        setPhase('extract');
+        setExpertState(prev => ({ ...prev, isOpen: true }));
+        askExtractionMethod(0, registry);
+    };
+
+    const askStandard = (index, currentRegistry) => {
+        const registry = currentRegistry || documentData.extractionRegistry;
+        if (index < registry.length) {
+            const item = registry[index];
+            setExpertState(prev => ({
+                ...prev,
+                isOpen: true,
+                message: `For **${item.subActivity}** (Method: ${item.method}), what is the **Standard** of quality?\n\n(e.g., "HD quality", "Under 200 words", "completed by 5 PM")`,
+                inputType: 'text',
+                inputAction: `set_standard_${index}`,
+                options: []
+            }));
+        } else {
+            // All standards defined
+            setExpertState(prev => ({
+                ...prev,
+                message: "Extraction Plan Ready. All methods and standards are set.\n\nCheck the Action Plan below to proceed.",
+                inputType: null,
+                options: [
+                    { label: "I'll do it myself (DIY)", action: 'start_diy_extraction', value: 'DIY' },
+                    { label: "Hire hiroor", action: 'hire_hiroor', value: 'Hire' }
+                ]
+            }));
+        }
+    };
+
+    const askExtractionMethod = (index, currentRegistry) => {
+        const list = currentRegistry || documentData.extractionRegistry;
+        if (index >= list.length) {
+            // All methods assigned -> Move to Standards
+            askStandard(0, list);
+            return;
+        }
+
+        const item = list[index];
+        setExpertState(prev => ({
+            ...prev,
+            isOpen: true,
+            message: `How should we capture **${item.subActivity}**? (${item.department} → ${item.responsibility})\n\nChoose the method with the lowest friction:`,
+            inputType: null,
+            options: [
+                { label: '🖥️ Screen Recording', action: 'set_extraction_method', value: { index, method: 'Screen Recording' } },
+                { label: '📷 Camera/GoPro', action: 'set_extraction_method', value: { index, method: 'Camera/GoPro' } },
+                { label: '🎤 Audio Notes', action: 'set_extraction_method', value: { index, method: 'Audio Notes' } },
+                { label: '🎭 Role-play', action: 'set_extraction_method', value: { index, method: 'Role-play' } }
+            ]
+        }));
+    };
+
+    const deriveDepartments = (ccfData) => {
+        const depts = [];
+
+        // Marketing
+        if ((ccfData.attention && ccfData.attention.length > 0) || (ccfData.enquiry && ccfData.enquiry.length > 0)) {
+            depts.push({
+                id: 'marketing',
+                name: 'Marketing',
+                responsibilities: [...(ccfData.attention || []), ...(ccfData.enquiry || [])]
+            });
+        }
+
+        // Sales
+        if (ccfData.sales && ccfData.sales.length > 0) {
+            depts.push({
+                id: 'sales',
+                name: 'Sales',
+                responsibilities: [...(ccfData.sales || [])]
+            });
+        }
+
+        // Operations
+        if (ccfData.delivery && ccfData.delivery.length > 0) {
+            depts.push({
+                id: 'operations',
+                name: 'Operations',
+                responsibilities: [...(ccfData.delivery || [])]
+            });
+        }
+
+        // Finance
+        if (ccfData.money && ccfData.money.length > 0) {
+            depts.push({
+                id: 'finance',
+                name: 'Finance',
+                responsibilities: [...(ccfData.money || [])]
+            });
+        }
+
+        return depts;
+    };
+
+    const startDefinePhase = () => {
+        setExpertState(prev => ({
+            ...prev,
+            isOpen: true,
+            isTyping: true,
+            message: "Whether your business is doing well or struggling depends on how you turn inputs into valuable outputs—your systems.\n\nWe’ll start by defining the systems that make you money.\n\n**Cash is king. Survival first.**\n\nAre you ready to begin?",
+            inputType: null,
+            options: [
+                { label: "I'm ready", action: 'define_ready' }
+            ],
+            inputAction: null
+        }));
+    };
+
+    const startAssignPhase = () => {
+        const depts = deriveDepartments(documentData.ccf);
+        setDocumentData(prev => ({ ...prev, departments: depts }));
+        setPhase('assign');
+
+        if (depts.length > 0) {
+            askDepartmentQuestions(depts[0], 0);
+        } else {
+            setExpertState(prev => ({
+                ...prev,
+                message: "No departments detected. Let's move on.",
+                options: [{ label: "Extract", action: 'start_extract' }]
+            }));
+        }
+    };
+
+    const startExtractPhase = () => {
+        setPhase('extract');
+        setHasAnsweredFirstQuestion(true);
+        // Direct transition, no intro
+        setExpertState(prev => ({
+            ...prev,
+            isOpen: true,
+            message: "We have the team. Now we extract the systems.\n\nEverything rests on capturing execution details.",
+            inputType: null,
+            options: [{ label: "Brainstorm Sub-activities", action: 'start_brainstorm' }],
+            specialEffect: null,
+            inputAction: null
+        }));
+    };
+
+    const askDepartmentQuestions = (dept, index) => {
+        setExpertState(prev => ({
+            ...prev,
+            isOpen: true,
+            message: `For **${dept.name}**, whom should we assign as the Department Head?`,
+            inputType: 'text',
+            inputAction: `assign_head_${index}`,
+            options: [] // Clear options
+        }));
+    };
+
+
+
+    const handleInputSubmit = (value, action) => {
+        setLastActivityTs(Date.now());
+
+        // Handle Goal Selection
+        if (action === 'select_goal') {
+            handleGoalSelect(value);
+            return;
+        }
+
+        setHighlightKey(action.replace('define_', 'ccf.'));
+        if (!hasAnsweredFirstQuestion) {
+            setHasAnsweredFirstQuestion(true);
+        }
+        // DEFINE PHASE
+        if (action === 'define_core_service') {
+            const updatedCCF = { ...documentData.ccf, coreService: value };
+            setDocumentData(prev => ({
+                ...prev,
+                ccf: updatedCCF
+            }));
+
+            // If we are in a project, update its name based on core service
+            if (currentProjectId) {
+                setProjects(prev => prev.map(p =>
+                    p.id === currentProjectId
+                        ? { ...p, name: value || 'New Project' }
+                        : p
+                ));
+            } else {
+                // If no current project (e.g. first load), create one
+                const newId = Date.now().toString();
+                setProjects(prev => [{
+                    id: newId,
+                    name: value || 'New Project',
+                    createdAt: new Date().toISOString()
+                }, ...prev]);
+                setCurrentProjectId(newId);
+            }
+
+            setExpertState(prev => ({
+                ...prev,
+                message: "Who is the core target client needing this service?",
+                inputType: 'text',
+                options: [],
+                inputAction: 'define_target_client'
+            }));
+        } else if (action === 'define_target_client') {
+            setDocumentData(prev => ({
+                ...prev,
+                ccf: { ...prev.ccf, targetClient: value }
+            }));
+            setExpertState(prev => ({
+                ...prev,
+                message: "How does your business attract new prospects' attention? (Select current methods only)",
+                inputType: 'multi-select',
+                options: ["LinkedIn", "Meta Ads", "Google Ads", "SEO", "Referrals", "Cold Email", "Content Marketing"],
+                inputAction: 'define_attention'
+            }));
+        } else if (action === 'define_attention') {
+            setHighlightKey('ccf.attention');
+            setDocumentData(prev => ({
+                ...prev,
+                ccf: { ...prev.ccf, attention: value }
+            }));
+            setExpertState(prev => ({
+                ...prev,
+                message: "When a prospect wants to enquire more or make an order, where do they go?",
+                inputType: 'multi-select',
+                options: ["Website Form", "Phone Call", "WhatsApp", "Email", "Instagram DM", "Live Chat"],
+                inputAction: 'define_enquiry'
+            }));
+        } else if (action === 'define_enquiry') {
+            setHighlightKey('ccf.enquiry');
+            setDocumentData(prev => ({
+                ...prev,
+                ccf: { ...prev.ccf, enquiry: value }
+            }));
+            setExpertState(prev => ({
+                ...prev,
+                message: "What steps does a prospect go through to finally make a purchase?",
+                inputType: 'dynamic-steps', // New input type
+                placeholderType: 'step',
+                options: [],
+                inputAction: 'define_sales'
+            }));
+        } else if (action === 'define_sales') {
+            setHighlightKey('ccf.sales');
+            setDocumentData(prev => ({
+                ...prev,
+                ccf: { ...prev.ccf, sales: value }
+            }));
+            setExpertState(prev => ({
+                ...prev,
+                message: "How is the work completed and delivered?",
+                inputType: 'dynamic-steps',
+                placeholderType: 'step',
+                options: [],
+                initialSteps: [], // Reset steps
+                inputAction: 'define_delivery'
+            }));
+        } else if (action === 'define_delivery') {
+            setHighlightKey('ccf.delivery');
+            setDocumentData(prev => ({
+                ...prev,
+                ccf: { ...prev.ccf, delivery: value }
+            }));
+            setExpertState(prev => ({
+                ...prev,
+                message: "How do you collect payment?",
+                inputType: 'multi-select',
+                options: ["Online Payment (Stripe/PayPal)", "Bank Transfer", "Cash", "Check"],
+                inputAction: 'define_money'
+            }));
+        } else if (action === 'define_money') {
+            setHighlightKey('ccf.money');
+            setDocumentData(prev => ({
+                ...prev,
+                ccf: { ...prev.ccf, money: value }
+            }));
+            setExpertState(prev => ({
+                ...prev,
+                message: "How do you encourage clients to return or send referrals?",
+                inputType: 'multi-select',
+                options: ["Referral Program", "Loyalty Discount", "Follow-up Calls", "Newsletter"],
+                inputAction: 'define_loyalty'
+            }));
+        } else if (action === 'define_loyalty') {
+            setHighlightKey('ccf.loyalty');
+            setDocumentData(prev => ({
+                ...prev,
+                ccf: { ...prev.ccf, loyalty: value }
+            }));
+            // End of Define Phase
+            setExpertState(prev => ({
+                ...prev,
+                message: "Excellent. We have defined your Critical Client Flow.\n\nNow, let's move to the Assign Phase to distribute responsibilities.",
+                inputType: null,
+                options: [{ label: "Start Assign Phase", action: 'start_assign' }],
+                inputAction: null,
+                specialEffect: 'completion' // Trigger animation
+            }));
+        }
+        // ASSIGN PHASE
+        else if (action && action.startsWith('assign_head_')) {
+            const index = parseInt(action.split('_')[2]);
+            setHighlightKey(`team.${index}.head`);
+            const depts = [...documentData.departments];
+            depts[index].head = value;
+            setDocumentData(prev => ({ ...prev, departments: depts }));
+
+            setExpertState(prev => ({
+                ...prev,
+                message: `And who is the most knowledgeable worker in **${depts[index].name}**?`,
+                inputType: 'text',
+                inputAction: `assign_worker_${index}`
+            }));
+        } else if (action && action.startsWith('assign_worker_')) {
+            const index = parseInt(action.split('_')[2]);
+            setHighlightKey(`team.${index}.worker`);
+            const depts = [...documentData.departments];
+            depts[index].worker = value;
+            setDocumentData(prev => ({ ...prev, departments: depts }));
+
+            if (index + 1 < depts.length) {
+                askDepartmentQuestions(depts[index + 1], index + 1);
+            } else {
+                setExpertState(prev => ({
+                    ...prev,
+                    message: "All departments assigned. We are ready to extract the systems.",
+                    specialEffect: 'completion',
+                    inputType: null,
+                    options: [{ label: "Start Extract Phase", action: 'start_extract' }]
+                }));
+            }
+        }
+        // BRAINSTORM PHASE - Sub-activities
+        else if (action && action.startsWith('add_subactivities_')) {
+            const parts = action.split('_');
+            const deptIndex = parseInt(parts[2]);
+            const respIndex = parseInt(parts[3]);
+
+            const dept = documentData.departments[deptIndex];
+            const responsibility = dept.responsibilities[respIndex];
+
+            // Update sub-activities for this responsibility
+            const updatedDepts = [...documentData.departments];
+            updatedDepts[deptIndex] = {
+                ...dept,
+                subActivities: {
+                    ...dept.subActivities,
+                    [responsibility]: value // value is array from dynamic-steps
+                }
+            };
+            setDocumentData(prev => ({ ...prev, departments: updatedDepts }));
+
+            // Move to next responsibility
+            askSubActivities(deptIndex, respIndex + 1);
+        }
+        // EXTRACT PHASE - System Selection & Plan
+        // EXTRACT PHASE - Method Assignment
+        // Handlers moved to handleExpertAction
+
+        // DIY Extraction Steps (Text Inputs)
+        else if (action === 'extract_goal') {
+            setDocumentData(prev => ({
+                ...prev,
+                activeSystem: { ...prev.activeSystem, goal: value }
+            }));
+            setExpertState(prev => ({
+                ...prev,
+                message: "When does this system **start**? (The Trigger)",
+                inputType: 'text',
+                inputAction: 'extract_trigger',
+                options: []
+            }));
+        } else if (action === 'extract_trigger') {
+            setDocumentData(prev => ({
+                ...prev,
+                activeSystem: { ...prev.activeSystem, trigger: value }
+            }));
+            setExpertState(prev => ({
+                ...prev,
+                message: "What **Inputs** (info, materials, people) do you need before starting?",
+                inputType: 'multi-select', // Or text, let's stick to multi-select for quick entry or text
+                inputAction: 'extract_inputs',
+                // Providing common business inputs as suggestions
+                options: ["Client Details", "Payment Confirmation", "Product Inventory", "Signed Contract", "Brief"]
+            }));
+        } else if (action === 'extract_inputs') {
+            setDocumentData(prev => ({
+                ...prev,
+                activeSystem: { ...prev.activeSystem, inputs: value } // Assuming value is array from multi-select
+            }));
+            setExpertState(prev => ({
+                ...prev,
+                message: "Now, list the step-by-step **Actions** to complete this task.",
+                inputType: 'dynamic-steps',
+                inputAction: 'extract_steps',
+                options: []
+            }));
+        } else if (action === 'extract_steps') {
+            setDocumentData(prev => ({
+                ...prev,
+                activeSystem: { ...prev.activeSystem, steps: value }
+            }));
+            setExpertState(prev => ({
+                ...prev,
+                message: "Finally, what **Tools** or software are used in this process?",
+                inputType: 'multi-select',
+                inputAction: 'extract_tools',
+                options: ["CRM", "Email", "Slack", "Excel/Sheets", "Accounting Software", "Project Mgmt Tool"]
+            }));
+        } else if (action === 'extract_tools') {
+            setDocumentData(prev => ({
+                ...prev,
+                activeSystem: { ...prev.activeSystem, tools: value },
+                // Save this system to the list
+                systems: prev.systems.map(s =>
+                    s.name === prev.activeSystem.name ? { ...s, status: "Done", data: { ...prev.activeSystem, tools: value } } : s
+                )
+            }));
+
+            setExpertState(prev => ({
+                ...prev,
+                message: `System **${documentData.activeSystem.name}** extracted successfully!\n\nWhat do you want to do next?`,
+                inputType: null,
+                inputAction: null,
+                specialEffect: 'completion',
+                options: [
+                    { label: "Extract Another System", action: 'start_brainstorm' },
+                    { label: "Finish & Organize", action: 'start_organize', value: 'organize' } // Placeholder for future
+                ]
+            }));
+        }
+    };
+
+    const handleActionPlanUpdate = (key, value) => {
+        setDocumentData(prev => {
+            const updatedPlan = { ...prev.extractionActionPlan, [key]: value };
+            const newData = { ...prev, extractionActionPlan: updatedPlan };
+
+            // Check for completion
+            const allComplete = Object.values(updatedPlan).every(v => v === true);
+
+            if (allComplete) {
+                // Trigger Expert completion
+                setExpertState(prevExpert => ({
+                    ...prevExpert,
+                    message: "Extraction Action Plan complete. Using these systems, your business can now run with less friction.\n\nReady to organize everything into a scalable architecture?",
+                    inputType: null,
+                    specialEffect: 'completion',
+                    options: [
+                        { label: "Start Organize Phase", action: 'start_organize' }
+                    ]
+                }));
+            }
+
+            return newData;
+        });
+    };
+
+    const calculateProgress = () => {
+        if (phase === 'define') return 25;
+        if (phase === 'assign') return 50;
+        if (phase === 'extract' || phase === 'diy_extraction' || phase === 'brainstorm') return 75;
+        if (phase === 'organize') return 100;
+        return 0;
+    };
+
+    const handleStartOrganize = () => {
+        setPhase('organize');
+        setExpertState(prev => ({
+            ...prev,
+            isOpen: true,
+            message: "Let's organize your exported systems into a clear architecture.",
+            options: [],
+            isTyping: true,
+            history: []
+        }));
+    };
+
+    const handlePhaseNavigate = (targetPhase) => {
+        // Just scroll to the section
+        setNavTarget({ phase: targetPhase, ts: Date.now() });
+
+        // If we were showing intro, hide it to let user see the navigation result
+        if (showIntro) {
+            setShowIntro(false);
+            setIntroFinished(true);
+            setHasAnsweredFirstQuestion(true); // Ensure document is visible
+        }
+    };
+
+    const handleGoalSelect = (goalId) => {
+        setSelectedGoal(goalId);
+        setIsGoalSelected(true);
+        setPhase('define');
+        setShowIntro(false);
+        setIntroFinished(true);
+        setHasAnsweredFirstQuestion(true);
+        startDefinePhase();
+    };
+
+    const handleExpertAction = (action, value) => {
+        setLastActivityTs(Date.now());
+        switch (action) {
+            case 'close':
+                setExpertState(prev => ({ ...prev, isOpen: false }));
+                break;
+            case 'define_ready':
+                setExpertState(prev => ({
+                    ...prev,
+                    message: "Great! What is the **core service** your business provides?",
+                    inputType: 'text',
+                    inputAction: 'define_core_service',
+                    options: []
+                }));
+                break;
+            case 'start_assign':
+                startAssignPhase();
+                break;
+            case 'start_extract':
+                startExtractPhase();
+                break;
+            case 'start_brainstorm':
+                askSubActivities(0, 0);
+                break;
+            case 'set_extraction_method':
+                const { index, method } = value;
+                setDocumentData(prev => {
+                    const updatedRegistry = [...prev.extractionRegistry];
+                    updatedRegistry[index] = { ...updatedRegistry[index], method };
+                    return { ...prev, extractionRegistry: updatedRegistry };
+                });
+                askExtractionMethod(index + 1); // Ask for next item
+                break;
+            case 'set_standard':
+                const standardIndex = parseInt(action.split('_')[2]);
+                setDocumentData(prev => {
+                    const updatedRegistry = [...prev.extractionRegistry];
+                    updatedRegistry[standardIndex] = { ...updatedRegistry[standardIndex], standard: value };
+                    return { ...prev, extractionRegistry: updatedRegistry };
+                });
+                askStandard(standardIndex + 1); // Ask for next item
+                break;
+            case 'start_diy_extraction':
+                // Find the first item in the registry that doesn't have a system yet
+                const firstUnextractedItem = documentData.extractionRegistry.find(item => !documentData.systems.some(s => s.name === item.subActivity));
+
+                if (firstUnextractedItem) {
+                    setDocumentData(prev => ({
+                        ...prev,
+                        activeSystem: {
+                            name: firstUnextractedItem.subActivity,
+                            department: firstUnextractedItem.department,
+                            responsibility: firstUnextractedItem.responsibility,
+                            worker: firstUnextractedItem.worker,
+                            method: firstUnextractedItem.method,
+                            standard: firstUnextractedItem.standard,
+                            goal: '', trigger: '', inputs: [], steps: [], tools: []
+                        },
+                        systems: [...prev.systems, { name: firstUnextractedItem.subActivity, status: "In Progress", data: {} }]
+                    }));
+                    setPhase('diy_extraction');
+                    setExpertState(prev => ({
+                        ...prev,
+                        isOpen: true,
+                        message: `Let's define the system for **${firstUnextractedItem.subActivity}**.\n\nWhat is the **Goal** of this system?`,
+                        inputType: 'text',
+                        inputAction: 'extract_goal',
+                        options: []
+                    }));
+                } else {
+                    setExpertState(prev => ({
+                        ...prev,
+                        message: "All systems have been extracted. Ready to organize!",
+                        inputType: null,
+                        options: [{ label: "Start Organize Phase", action: 'start_organize' }]
+                    }));
+                }
+                break;
+            case 'hire_hiroor':
+                setShowHiroorModal(true);
+                setExpertState(prev => ({ ...prev, isOpen: false })); // Close expert box when modal opens
+                break;
+            case 'start_organize':
+                handleStartOrganize();
+                break;
+            case 'create_new_project':
+                const newId = Date.now().toString();
+                const newProject = {
+                    id: newId,
+                    name: 'New Project',
+                    createdAt: new Date().toISOString()
+                };
+                setProjects(prev => [newProject, ...prev]);
+                setCurrentProjectId(newId);
+                setDocumentData(initialDocumentData); // Reset document data for new project
+                setSelectedGoal(newId); // Use project ID as goal ID
+                setIsGoalSelected(true);
+                setPhase('define');
+                setShowIntro(false);
+                setIntroFinished(true);
+                startDefinePhase();
+                break;
+            case 'select_existing_project':
+                setExpertState(prev => ({
+                    ...prev,
+                    message: "Which project would you like to continue?",
+                    inputType: 'select',
+                    options: projects.map(p => ({ label: p.name, value: p.id })),
+                    inputAction: 'select_goal' // Re-use select_goal for project selection
+                }));
+                break;
+            default:
+                console.warn('Unknown action:', action);
+        }
+    };
+
+    return (
+        <div style={{ display: 'flex', width: '100vw', height: '100vh', backgroundColor: '#fff', overflow: 'hidden' }}>
+            <div style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                bottom: 0,
+                width: isSidebarOpen ? '260px' : '72px',
+                zIndex: 1001,
+                backgroundColor: '#fff',
+                transition: 'width 0.3s ease'
+            }}>
+                <AppSidebar
+                    isOpen={isSidebarOpen}
+                    setIsOpen={setIsSidebarOpen}
+                    projects={projects}
+                    currentProjectId={currentProjectId}
+                    onNewProject={handleNewProject}
+                    onSelectProject={handleSelectProject}
+                    onRenameProject={handleRenameProject}
+                    onRemoveProject={handleRemoveProject}
+                    phase={phase}
+                    progress={calculateProgress()}
+                />
+            </div>
+
+            <div style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                position: 'relative',
+                marginLeft: isSidebarOpen ? '260px' : '72px',
+                transition: 'margin-left 0.3s ease'
+            }}>
+                <div style={{
+                    position: 'fixed',
+                    top: '40px',
+                    left: `calc(50% + ${(isSidebarOpen ? 260 : 72) / 2}px)`,
+                    transform: 'translateX(-50%)',
+                    zIndex: 1000,
+                    pointerEvents: 'none'
+                }}>
+                    <div style={{ pointerEvents: 'auto' }}>
+                        <PhaseProgress
+                            currentPhase={phase}
+                            onPhaseClick={handlePhaseNavigate}
+                        />
+                    </div>
+                </div>
+
+                <PreviewSpace
+                    data={documentData}
+                    phase={phase}
+                    showIntro={showIntro}
+                    hasAnsweredFirstQuestion={hasAnsweredFirstQuestion}
+                    scrollToSection={navTarget}
+                    onIntroFinish={handleIntroStart}
+                    onActionPlanUpdate={handleActionPlanUpdate}
+                    onStartOrganize={handleStartOrganize}
+                    lastActivityTs={lastActivityTs}
+                    highlightKey={highlightKey}
+                />
+
+                {expertState.isOpen && (
+                    <ExpertBox
+                        state={expertState}
+                        onAction={handleExpertAction}
+                        onSubmit={handleInputSubmit}
+                        phase={phase}
+                        projects={projects}
+                        onSelectProject={handleSelectProject}
+                        onRemoveProject={handleRemoveProject}
+                    />
+                )}
+
+                {/* hiroor Marketplace Modal */}
+                <HiroorModal
+                    isOpen={showHiroorModal}
+                    onClose={() => setShowHiroorModal(false)}
+                    extractionPlan={documentData.activeExtractionPlan}
+                />
+            </div>
+        </div>
+    );
+};
+
+export default SOPBuilder;

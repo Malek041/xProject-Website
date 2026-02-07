@@ -1,0 +1,136 @@
+import React from 'react';
+import { ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import FadeIn from './FadeIn';
+import Typewriter from './Typewriter';
+import { useLanguage } from '../context/LanguageContext';
+
+const Hero = () => {
+    const { t } = useLanguage();
+    const navigate = useNavigate();
+    const videoRef = React.useRef(null);
+
+    React.useEffect(() => {
+        if (videoRef.current) {
+            videoRef.current.playbackRate = 2.5;
+        }
+    }, []);
+
+    return (
+        <section style={{
+            paddingTop: '10rem',
+            paddingBottom: '2rem',
+            minHeight: '85vh',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            position: 'relative',
+            // Removed overflow: hidden to allow sticky child
+        }}>
+            {/* Decorative Blob */}
+            <div style={{
+                position: 'absolute',
+                top: '-20%',
+                right: '-10%',
+                width: '50vw',
+                height: '50vw',
+                background: 'radial-gradient(circle, rgba(182, 243, 0, 0.15) 0%, rgba(255,255,255,0) 70%)',
+                borderRadius: '50%',
+                zIndex: -1,
+                pointerEvents: 'none' // Ensure blob doesn't interfere
+            }} />
+
+            <div className="container" style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                <h1 style={{
+                    fontSize: 'clamp(3rem, 5vw, 5.5rem)',
+                    fontWeight: '350',
+                    marginBottom: '2rem',
+                    maxWidth: '20ch',
+                    lineHeight: '1',
+                    letterSpacing: '-0.04em',
+                }}>
+                    {t({
+                        en: <><Typewriter text="xProject Aleph 1 helps you build the next Glovo/InDrive" speed={20} startDelay={1000} /><span className="highlight"><Typewriter text="/" speed={30} />.</span></>,
+                        fr: <><Typewriter text="xProject Aleph 1" speed={20} startDelay={1000} /><span className="highlight"><Typewriter text="/" speed={50} startDelay={3000} />.</span></>
+                    })}
+                </h1>
+                <FadeIn delay={2} direction="up" distance={30}>
+                    <button
+                        onClick={() => navigate('/apply')}
+                        className="btn-primary"
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem', padding: '1.25rem 2.5rem', fontSize: '1.25rem', borderRadius: '0.5rem', backgroundColor: 'var(--color-dark)', color: 'var(--color-surface)', border: 'none', marginBottom: '4rem' }}
+                    >
+                        {t({ en: "Get xProject Free", fr: "Obtenez xProject Gratuit" })}
+                    </button>
+                </FadeIn>
+
+                {/* Video Section */}
+                <FadeIn delay={2.5} direction="up" distance={40}>
+                    <div style={{
+                        width: '100%',
+                        maxWidth: '5000px',
+                        margin: '0 auto',
+                        borderRadius: '0.5rem',
+                        overflow: 'hidden',
+                        background: 'var(--color-surface)',
+                        padding: '8px',
+                        marginBottom: '4rem',
+                    }}>
+                        <video
+                            ref={videoRef}
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            style={{
+                                width: '100%',
+                                display: 'block',
+                                borderRadius: '0.5rem',
+                                boxShadow: '0 0 5px var(--color-grey-500)'
+
+                            }}
+                            src="/videos/Videos for Web/Minimalistic Intefrace. An Expert Guide for Web2.mov"
+                        />
+                    </div>
+                </FadeIn>
+            </div>
+
+            {/* Sticky Brand Bar */}
+            <div style={{
+                position: 'sticky',
+                bottom: 0,
+                width: '100%',
+                backgroundColor: 'var(--color-surface)',
+                backdropFilter: 'blur(10px)',
+                padding: '1.5rem 0',
+                zIndex: 10,
+                marginTop: 'auto'
+            }}>
+                <div className="container" style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '1rem'
+                }}>
+
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        gap: '4rem',
+                        opacity: 0.6,
+                        filter: 'grayscale(100%)'
+                    }}>
+                        <img src="/images/logos/flosi.png" alt="Flosi" style={{ height: '24px', objectFit: 'contain' }} />
+                        <img src="/images/logos/hiro.png" alt="Hiro" style={{ height: '28px', objectFit: 'contain' }} />
+                        <img src="/images/logos/drok.png" alt="Drok" style={{ height: '26px', objectFit: 'contain' }} />
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
+};
+
+export default Hero;
+
+

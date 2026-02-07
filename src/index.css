@@ -1,0 +1,220 @@
+@import url('https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --color-notion-blue: #0265D2;
+  --color-notion-light-blue: #EDF5FD;
+  --color-primary: var(--color-notion-blue);
+
+  /* Semantic Variables (Light Mode Defaults) */
+  --color-bg-base: #FFFFFF;
+  --color-bg-sidebar: #F7F7F5;
+  --color-bg-surface: #FFFFFF;
+  --color-bg-translucent: rgba(255, 255, 255, 0.8);
+  --color-text-main: #111111;
+  --color-text-muted: #666666;
+  --color-border-default: rgba(0, 0, 0, 0.08);
+  --color-border-translucent: rgba(0, 0, 0, 0.08);
+  --color-hover-overlay: rgba(55, 53, 47, 0.04);
+  --color-bg-accent-blue-light: #E6F0FF;
+  --color-text-accent-blue: #0066DB;
+  --color-bg-dark-accent: #474542;
+
+  --color-dark: #222222;
+  --color-light: #FFFFFF;
+  --color-surface: #FFFFFF;
+  --color-grey-100: #F7F7F5;
+  --color-grey-200: #EBEBE9;
+  --color-grey-500: #999999;
+
+  --font-heading: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+
+  --spacing-section: 5rem;
+  --container-width: 900px;
+  /* Very tight container for a premium, magazine-style feel */
+
+  --transition-smooth: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  --shadow-notion: 0 1px 3px rgba(15, 15, 15, 0.1), 0 2px 4px rgba(15, 15, 15, 0.05);
+  --border-notion: 1px solid var(--color-border-default);
+}
+
+[data-theme="dark"] {
+  --color-bg-base: #0A0A0A;
+  --color-bg-sidebar: #121212;
+  --color-bg-surface: #121212;
+  --color-bg-translucent: rgba(10, 10, 10, 0.85);
+  --color-text-main: #FFFFFF;
+  --color-text-muted: #A0A0A0;
+  --color-border-default: rgba(255, 255, 255, 0.12);
+  --color-border-translucent: rgba(255, 255, 255, 0.1);
+  --color-hover-overlay: rgba(255, 255, 255, 0.08);
+  --color-bg-accent-blue-light: #1A2838;
+  --color-text-accent-blue: #3E8BFF;
+  --color-bg-dark-accent: #1A1A1A;
+
+  --color-notion-blue: #3E8BFF;
+  /* Brighter blue for dark mode */
+  --color-notion-light-blue: #1A2838;
+  --color-grey-100: #121212;
+  --color-grey-200: #1A1A1A;
+  --color-grey-500: #888888;
+  --dark-mode-invert: 1;
+  --shadow-notion: 0 1px 3px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-bg-base);
+  color: var(--color-text-main);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+  color: var(--color-text-main);
+}
+
+.font-hand {
+  font-family: 'Patrick Hand', cursive;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+ul {
+  list-style: none;
+}
+
+.container {
+  max-width: var(--container-width);
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.highlight {
+  position: relative;
+  display: inline-block;
+  z-index: 1;
+}
+
+.highlight::after {
+  content: '';
+  position: absolute;
+  bottom: 0.2em;
+  left: -0.1em;
+  right: -0.1em;
+  height: 0.4em;
+  background-color: var(--color-primary);
+  z-index: -1;
+  transform: rotate(-1deg);
+  border-radius: 4px;
+}
+
+.card-hover {
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.card-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-hover);
+}
+
+.btn-primary {
+  display: inline-block;
+  background-color: var(--color-primary);
+  color: var(--color-dark);
+  padding: 1rem 2rem;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 1.1rem;
+  border-radius: 99px;
+  cursor: pointer;
+  border: none;
+  transition: transform var(--transition-fast), background-color var(--transition-fast);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  background-color: #A3D900;
+  box-shadow: 0 10px 20px rgba(182, 243, 0, 0.2);
+}
+
+/* Advanced Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes parallax {
+  from {
+    transform: translateY(0px);
+  }
+
+  to {
+    transform: translateY(-30px);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.stagger-item {
+  opacity: 0;
+}
+
+.smooth-scroll {
+  scroll-behavior: smooth;
+}
+
+/* Hover effects for cards */
+.card-hover {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-8px) scale(1.01);
+  box-shadow: var(--shadow-hover);
+}
