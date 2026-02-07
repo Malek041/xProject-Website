@@ -8,13 +8,13 @@ import { getFirestore } from "firebase/firestore";
   Get these from: Firebase Console -> Project Settings -> General -> Your apps
 */
 const firebaseConfig = {
-  apiKey: "AIzaSyAK31ark01UEW0kze668juGaGj4F0gaERc",
-  authDomain: "xproject-ac0a5.firebaseapp.com",
-  projectId: "xproject-ac0a5",
-  storageBucket: "xproject-ac0a5.firebasestorage.app",
-  messagingSenderId: "10581435557",
-  appId: "1:10581435557:web:fa3b99d6f2071ef490194c",
-  measurementId: "G-EPP5ZKXFNM"
+  apiKey: "AIzaSyDZtEWURWEUozmzz-S2Y0iBu0KnQPRlDFw",
+  authDomain: "hiro-production.firebaseapp.com",
+  projectId: "hiro-production",
+  storageBucket: "hiro-production.firebasestorage.app",
+  messagingSenderId: "186950130411",
+  appId: "1:186950130411:web:a86e45c4226cd797befcae",
+  measurementId: "G-LCLV06CXSB"
 };
 
 const app = initializeApp(firebaseConfig);
