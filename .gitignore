@@ -25,7 +25,7 @@ dist-ssr
 # Videos (block all by default)
 *.mp4
 *.mov
-public/videos/
+# *.mov (handled below)
 
 # EXCEPTIONS: Allow small homepage videos (<4MB)
 !public/videos/intro-dark.mp4
@@ -35,6 +35,12 @@ public/videos/
 !public/videos/avatar-left.mp4
 !public/videos/avatar-right.mp4
 !public/videos/expert-avatar.mp4
+!public/videos/brainstorm-tasks.mp4
+!public/videos/capture-methods.mp4
+!public/videos/set-standards.mp4
+!public/videos/execute-checklist.mp4
+!public/videos/organize-systems.mp4
+!public/videos/integrate-systems.mp4
 
 # Large generated images (use CDN or external storage)
 public/images/verify_*.webp
