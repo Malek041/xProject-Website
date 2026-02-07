@@ -534,14 +534,16 @@ const SOPBuilder = () => {
         return systems;
     };
 
-    const startBrainstorm = () => {
+    const startBrainstorm = (latestData) => {
         setPhase('brainstorm');
         setIsPhaseStarted(false);
 
         // Check if we have departments with responsibilities
-        const depts = documentData.departments;
+        const currentData = latestData || documentData;
+        const depts = currentData.departments;
         if (!depts || depts.length === 0) {
-            // No departments, skip
+            // No departments, skip or handle error
+            console.warn('No departments found for brainstorming');
             return;
         }
 
@@ -863,9 +865,9 @@ const SOPBuilder = () => {
         }
     };
 
-    const startExtractPhase = () => {
+    const startExtractPhase = (latestData) => {
         // Automatic transition to brainstorming
-        startBrainstorm();
+        startBrainstorm(latestData);
     };
 
     const askDepartmentQuestions = (dept, index) => {
@@ -1282,8 +1284,9 @@ const SOPBuilder = () => {
             if (index + 1 < depts.length) {
                 askDepartmentQuestions(depts[index + 1], index + 1);
             } else {
-                // Direct to Extract
-                startExtractPhase();
+                // Direct to Extract with the latest collected data
+                const finalAssignData = { ...documentData, departments: depts };
+                startExtractPhase(finalAssignData);
             }
         } else if (action && action.startsWith('add_subactivities_')) {
             const parts = action.split('_');

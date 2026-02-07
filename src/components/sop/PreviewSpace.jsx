@@ -2054,7 +2054,7 @@ const PreviewSpace = ({
                                                         gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
                                                         gap: '24px'
                                                     }}>
-                                                        {data.departments.map((dept, idx) => {
+                                                        {data.departments?.map((dept, idx) => {
                                                             const deptSystems = data.extractionRegistry.filter(item => item.department === dept.name);
                                                             return (
                                                                 <div key={idx} style={{
@@ -2157,7 +2157,7 @@ const PreviewSpace = ({
 
                                         {data.departments && data.departments.length > 0 ? (
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-                                                {data.departments.map((dept, deptIdx) => (
+                                                {data.departments?.map((dept, deptIdx) => (
                                                     <div key={deptIdx} style={{
                                                         border: `1px solid ${THEME.border}`,
                                                         borderRadius: '16px',

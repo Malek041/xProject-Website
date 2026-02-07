@@ -2,29 +2,53 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Send, X } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
+import { useAuth } from '../../context/AuthContext';
+import { db } from '../../services/firebase';
+import { collection, addDoc } from 'firebase/firestore';
 
 const FeedbackModal = ({ isOpen, onClose }) => {
     const { t } = useLanguage();
+    const { currentUser } = useAuth();
     const [rating, setRating] = useState(0);
     const [hover, setHover] = useState(0);
     const [feedback, setFeedback] = useState('');
     const [submitted, setSubmitted] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (rating === 0) return;
 
-        // Log feedback or send to backend
-        console.log('Feedback submitted:', { rating, feedback });
+        setIsSubmitting(true);
 
-        setSubmitted(true);
-        setTimeout(() => {
-            onClose();
-            // Reset for next time if needed, though usually modal unmounts
-            setSubmitted(false);
-            setRating(0);
-            setFeedback('');
-        }, 2000);
+        const feedbackData = {
+            rating,
+            feedback,
+            userId: currentUser?.uid || 'anonymous',
+            userEmail: currentUser?.email || 'anonymous',
+            createdAt: new Date().toISOString(),
+            timestamp: Date.now()
+        };
+
+        try {
+            // Save to Firebase
+            await addDoc(collection(db, 'feedback'), feedbackData);
+            console.log('Feedback saved to Firebase:', feedbackData);
+
+            setSubmitted(true);
+            setTimeout(() => {
+                onClose();
+                // Reset for next time
+                setSubmitted(false);
+                setRating(0);
+                setFeedback('');
+                setIsSubmitting(false);
+            }, 2000);
+        } catch (error) {
+            console.error('Error saving feedback:', error);
+            alert('Failed to submit feedback. Please try again.');
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -108,7 +132,7 @@ const FeedbackModal = ({ isOpen, onClose }) => {
                                             objectFit: 'cover'
                                         }}
                                     >
-                                        <source src="/videos/kling_20260207_Image_to_Video_It_moves_f_3954_0.mp4" type="video/mp4" />
+                                        <source src="/videos/avatar-left.mp4" type="video/mp4" />
                                     </video>
                                 </div>
 
@@ -180,25 +204,26 @@ const FeedbackModal = ({ isOpen, onClose }) => {
 
                                 <button
                                     onClick={handleSubmit}
-                                    disabled={rating === 0}
+                                    disabled={rating === 0 || isSubmitting}
                                     style={{
                                         width: '100%',
                                         padding: '16px',
                                         borderRadius: '16px',
-                                        backgroundColor: rating > 0 ? '#fff' : '#222',
-                                        color: rating > 0 ? '#000' : '#666',
+                                        backgroundColor: (rating > 0 && !isSubmitting) ? '#fff' : '#222',
+                                        color: (rating > 0 && !isSubmitting) ? '#000' : '#666',
                                         fontWeight: '700',
                                         fontSize: '16px',
                                         border: 'none',
-                                        cursor: rating > 0 ? 'pointer' : 'not-allowed',
+                                        cursor: (rating > 0 && !isSubmitting) ? 'pointer' : 'not-allowed',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         gap: '8px',
-                                        transition: 'all 0.2s ease'
+                                        transition: 'all 0.2s ease',
+                                        opacity: isSubmitting ? 0.7 : 1
                                     }}
                                 >
-                                    Submit Feedback <Send size={18} />
+                                    {isSubmitting ? 'Submitting...' : 'Submit Feedback'} <Send size={18} />
                                 </button>
                             </>
                         ) : (

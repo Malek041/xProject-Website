@@ -3,12 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, DollarSign, Activity, TrendingUp, Check, Target, Shield, Zap, ArrowRight, Send } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
+import { db } from '../services/firebase';
+import { doc, setDoc } from 'firebase/firestore';
 import Typewriter from '../components/Typewriter';
 
 const Application = () => {
     const [step, setStep] = useState(0);
     const [formData, setFormData] = useState({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const { t, lang } = useLanguage();
+    const { currentUser } = useAuth();
     const navigate = useNavigate();
 
     const questions = [
@@ -112,17 +117,37 @@ const Application = () => {
         }
     };
 
-    const handleFinalSubmit = (e) => {
+    const handleFinalSubmit = async (e) => {
         e.preventDefault();
+        if (!currentUser) {
+            alert('Please sign in first');
+            return;
+        }
+
+        setIsSubmitting(true);
         const formElement = e.target;
+        const whatsappNumber = formElement[0].value;
+
         const finalData = {
             ...formData,
-            name: formElement[0].value,
-            companyWebsite: formElement[1].value,
-            email: formElement[2].value
+            whatsappNumber,
+            completedAt: new Date().toISOString(),
+            userId: currentUser.uid,
+            userEmail: currentUser.email
         };
-        console.log('Complete Form Data:', finalData);
-        navigate('/results', { state: { formData: finalData } });
+
+        try {
+            // Store in Firebase
+            await setDoc(doc(db, 'applications', currentUser.uid), finalData);
+            currentUser.hasCompletedApplication = true;
+            console.log('Application saved to Firebase and state updated');
+            navigate('/sop-builder');
+        } catch (error) {
+            console.error('Error saving application:', error);
+            alert('Failed to save application. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const currentQuestion = questions[step];
@@ -347,8 +372,10 @@ const Application = () => {
                             <form onSubmit={handleFinalSubmit} style={{ maxWidth: '400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                 <input
                                     required
-                                    type="text"
-                                    placeholder={t({ en: "Full Name", fr: "Nom Complet" })}
+                                    type="tel"
+                                    placeholder={t({ en: "WhatsApp Number (+212...)", fr: "Numéro WhatsApp (+212...)" })}
+                                    pattern="[+][0-9]{1,4}[0-9]{9,}"
+                                    title="Please enter a valid phone number with country code (e.g., +212612345678)"
                                     style={{
                                         padding: '0.8rem 1rem',
                                         borderRadius: '6px',
@@ -362,59 +389,30 @@ const Application = () => {
                                     onFocus={(e) => e.target.style.borderColor = 'var(--color-notion-blue)'}
                                     onBlur={(e) => e.target.style.borderColor = 'var(--color-border-default)'}
                                 />
-                                <input
-                                    type="url"
-                                    placeholder={t({ en: "Company Website (Optional)", fr: "Site Web de l'Entreprise (Optionnel)" })}
+                                <button
+                                    type="submit"
+                                    disabled={isSubmitting}
                                     style={{
-                                        padding: '0.8rem 1rem',
-                                        borderRadius: '6px',
-                                        border: '1px solid var(--color-border-default)',
+                                        marginTop: '1rem',
+                                        padding: '0.8rem',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '0.75rem',
                                         fontSize: '1rem',
-                                        backgroundColor: 'var(--color-bg-base)',
-                                        color: 'var(--color-text-main)',
-                                        outline: 'none',
-                                        transition: 'border-color 0.2s'
-                                    }}
-                                    onFocus={(e) => e.target.style.borderColor = 'var(--color-notion-blue)'}
-                                    onBlur={(e) => e.target.style.borderColor = 'var(--color-border-default)'}
-                                />
-                                <input
-                                    required
-                                    type="email"
-                                    placeholder={t({ en: "Email", fr: "Email" })}
-                                    style={{
-                                        padding: '0.8rem 1rem',
+                                        backgroundColor: isSubmitting ? '#666' : 'var(--color-notion-blue)',
+                                        color: '#fff',
                                         borderRadius: '6px',
-                                        border: '1px solid var(--color-border-default)',
-                                        fontSize: '1rem',
-                                        backgroundColor: 'var(--color-bg-base)',
-                                        color: 'var(--color-text-main)',
-                                        outline: 'none',
-                                        transition: 'border-color 0.2s'
+                                        border: 'none',
+                                        fontWeight: '600',
+                                        cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                                        transition: 'opacity 0.2s',
+                                        opacity: isSubmitting ? 0.7 : 1
                                     }}
-                                    onFocus={(e) => e.target.style.borderColor = 'var(--color-notion-blue)'}
-                                    onBlur={(e) => e.target.style.borderColor = 'var(--color-border-default)'}
-                                />
-                                <button type="submit" style={{
-                                    marginTop: '1rem',
-                                    padding: '0.8rem',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '0.75rem',
-                                    fontSize: '1rem',
-                                    backgroundColor: 'var(--color-notion-blue)',
-                                    color: '#fff',
-                                    borderRadius: '6px',
-                                    border: 'none',
-                                    fontWeight: '600',
-                                    cursor: 'pointer',
-                                    transition: 'opacity 0.2s'
-                                }}
-                                    onMouseOver={(e) => e.currentTarget.style.opacity = '0.9'}
-                                    onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
+                                    onMouseOver={(e) => !isSubmitting && (e.currentTarget.style.opacity = '0.9')}
+                                    onMouseOut={(e) => !isSubmitting && (e.currentTarget.style.opacity = '1')}
                                 >
-                                    {t({ en: "Submit Qualification", fr: "Envoyer la Qualification" })} <Send size={18} />
+                                    {isSubmitting ? t({ en: "Submitting...", fr: "Envoi en cours..." }) : t({ en: "Submit Qualification", fr: "Envoyer la Qualification" })} <Send size={18} />
                                 </button>
                             </form>
                         </motion.div>

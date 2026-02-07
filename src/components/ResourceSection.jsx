@@ -1,11 +1,14 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '../context/LanguageContext';
+import { useNavigate } from 'react-router-dom';
 
 const ResourceSection = () => {
     const { t } = useLanguage();
+    const navigate = useNavigate();
     const resources = [
         {
+            id: 'ccf-framework',
             title: t({
                 en: "The CCF Framework",
                 fr: "Le cadre CCF"
@@ -14,6 +17,7 @@ const ResourceSection = () => {
             image: "/images/SOPBuilder frameworks/CCF.png"
         },
         {
+            id: 'drtc-chart',
             title: t({
                 en: "The DRTC Chart",
                 fr: "Le tableau DRTC"
@@ -22,6 +26,7 @@ const ResourceSection = () => {
             image: "/images/SOPBuilder frameworks/DRTC.png"
         },
         {
+            id: 'sas-method',
             title: t({
                 en: "The SAS Method",
                 fr: "La méthode SAS"
@@ -67,6 +72,7 @@ const ResourceSection = () => {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: index * 0.1, duration: 0.6 }}
+                        onClick={() => navigate(`/framework/${res.id}`)}
                         style={{
                             backgroundColor: 'var(--color-bg-sidebar)',
                             borderRadius: '30px',

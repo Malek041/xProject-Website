@@ -11,8 +11,22 @@ import SOPBuilder from './pages/SOPBuilder';
 import CTA from './components/CTA';
 import ScrollToTop from './components/ScrollToTop';
 import { LanguageProvider } from './context/LanguageContext';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { Navigate } from 'react-router-dom';
+
+const ProtectedRoute = ({ children, requireApplication = true }) => {
+  const { currentUser } = useAuth();
+
+  if (!currentUser) return <Navigate to="/signup" />;
+
+  if (requireApplication && currentUser.hasCompletedApplication === false) {
+    return <Navigate to="/application" />;
+  }
+
+  return children;
+};
+import FrameworkDetail from './pages/FrameworkDetail';
 
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -33,6 +47,8 @@ const Layout = ({ children }) => {
   );
 };
 
+import LaptopOnly from './components/LaptopOnly';
+
 function App() {
   return (
     <LanguageProvider>
@@ -43,11 +59,22 @@ function App() {
             <Layout>
               <Routes>
                 <Route path="/" element={<Home />} />
-                <Route path="/application" element={<Application />} />
+                <Route path="/application" element={
+                  <ProtectedRoute requireApplication={false}>
+                    <Application />
+                  </ProtectedRoute>
+                } />
                 <Route path="/results" element={<Results />} />
                 <Route path="/signup" element={<SignUp />} />
                 {/* <Route path="/projects" element={<Projects />} /> */}
-                <Route path="/sop-builder" element={<SOPBuilder />} />
+                <Route path="/sop-builder" element={
+                  <ProtectedRoute>
+                    <LaptopOnly>
+                      <SOPBuilder />
+                    </LaptopOnly>
+                  </ProtectedRoute>
+                } />
+                <Route path="/framework/:id" element={<FrameworkDetail />} />
               </Routes>
             </Layout>
           </Router>
