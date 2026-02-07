@@ -89,7 +89,7 @@ const AlephSection = () => {
 
     return (
         <section style={{
-            padding: isMobile ? '2.5rem 2.5rem 1.5rem' : '5rem 0 2.5rem',
+            padding: isMobile ? '3rem 1.5rem' : '5rem 0 2.5rem',
             backgroundColor: 'var(--color-bg-base)',
             overflow: 'hidden',
             transition: 'background-color 0.3s ease'
@@ -97,7 +97,7 @@ const AlephSection = () => {
             <div className="container" style={{
                 maxWidth: '1350px',
                 margin: '0 auto',
-                padding: isMobile ? '0 1.5rem' : '0 2rem'
+                padding: isMobile ? '0 1rem' : '0 2rem'
             }}>
                 {/* Introducing Aleph1 Section */}
                 <div style={{ marginBottom: isMobile ? '6rem' : '5rem' }}>
@@ -123,7 +123,7 @@ const AlephSection = () => {
                             borderRadius: '16px',
                             border: 'var(--border-notion)',
                             boxShadow: 'var(--shadow-notion)',
-                            padding: isMobile ? '2rem' : '3.5rem',
+                            padding: isMobile ? '1.25rem' : '3.5rem',
                             display: 'flex',
                             flexDirection: isMobile ? 'column' : 'row',
                             gap: isMobile ? '2.5rem' : '4rem',
@@ -135,7 +135,7 @@ const AlephSection = () => {
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '0.6rem',
-                                marginBottom: '2rem',
+                                marginBottom: isMobile ? '1.5rem' : '2rem',
                                 color: 'var(--color-text-main)',
                                 fontWeight: 700,
                                 letterSpacing: '0.1em',

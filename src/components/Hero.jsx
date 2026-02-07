@@ -29,7 +29,7 @@ const Hero = () => {
 
     return (
         <section style={{
-            padding: isMobile ? '10rem 2.5rem 2rem' : '7rem 1.5rem 3rem',
+            padding: isMobile ? '7rem 1.5rem 2rem' : '7rem 1.5rem 3rem',
             backgroundColor: 'var(--color-bg-base)',
             display: 'flex',
             flexDirection: 'column',

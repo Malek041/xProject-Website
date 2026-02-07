@@ -83,7 +83,7 @@ const StoryChat = () => {
 
     return (
         <section style={{
-            padding: isMobile ? '2rem 5rem' : '1rem 15rem',
+            padding: isMobile ? '3rem 1.5rem' : '1rem 15rem',
             backgroundColor: 'var(--color-bg-base)',
             transition: 'background-color 0.3s ease'
         }}>

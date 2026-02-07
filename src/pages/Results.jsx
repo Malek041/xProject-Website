@@ -8,7 +8,14 @@ const Results = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { t } = useLanguage();
+    const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 768);
     const formData = location.state?.formData || {};
+
+    React.useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     // Qualification Logic
     const isQualified = () => {
@@ -50,11 +57,13 @@ const Results = () => {
             minHeight: '100vh',
             backgroundColor: 'var(--color-bg-base)',
             color: 'var(--color-text-main)',
-            paddingTop: '8rem',
-            paddingBottom: '6rem',
+            paddingTop: isMobile ? '5rem' : '8rem',
+            paddingBottom: isMobile ? '4rem' : '6rem',
+            paddingLeft: isMobile ? '1.25rem' : '0',
+            paddingRight: isMobile ? '1.25rem' : '0',
             transition: 'background-color 0.3s ease, color 0.3s ease'
         }}>
-            <div className="container" style={{ maxWidth: '800px' }}>
+            <div className="container" style={{ maxWidth: '800px', padding: 0 }}>
 
                 {/* Header */}
                 <motion.div
@@ -64,7 +73,7 @@ const Results = () => {
                     style={{ textAlign: 'center', marginBottom: '3rem' }}
                 >
                     <h1 style={{
-                        fontSize: '3rem',
+                        fontSize: isMobile ? '2rem' : '3rem',
                         fontWeight: '800',
                         marginBottom: '1rem',
                         letterSpacing: '-0.03em',
@@ -86,7 +95,7 @@ const Results = () => {
                 >
                     <div style={{
                         backgroundColor: qualified ? 'rgba(39, 174, 96, 0.08)' : 'rgba(235, 87, 87, 0.08)',
-                        padding: '2.5rem',
+                        padding: isMobile ? '1.5rem' : '2.5rem',
                         borderRadius: '8px',
                         marginBottom: '3rem',
                         border: qualified ? '1px solid rgba(39, 174, 96, 0.2)' : '1px solid rgba(235, 87, 87, 0.2)',

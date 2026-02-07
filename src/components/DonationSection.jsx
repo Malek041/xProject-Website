@@ -16,7 +16,7 @@ const DonationSection = () => {
 
     return (
         <section style={{
-            padding: isMobile ? '5rem 2.5rem' : '10rem 2rem',
+            padding: isMobile ? '4rem 1.5rem' : '10rem 2rem',
             backgroundColor: 'var(--color-bg-base)',
             display: 'flex',
             flexDirection: 'column',
@@ -33,11 +33,11 @@ const DonationSection = () => {
                     viewport={{ once: true }}
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                     style={{
-                        fontSize: isMobile ? '28px' : '48px',
-                        lineHeight: '1.25',
+                        fontSize: isMobile ? '24px' : '48px',
+                        lineHeight: '1.3',
                         fontWeight: '400',
                         color: 'var(--color-text-main)',
-                        marginBottom: '40px',
+                        marginBottom: isMobile ? '30px' : '40px',
                         fontFamily: 'serif',
                         letterSpacing: '-0.02em',
                         maxWidth: '900px'
@@ -58,12 +58,12 @@ const DonationSection = () => {
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
-                        gap: '32px'
+                        gap: isMobile ? '24px' : '32px'
                     }}
                 >
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         <div style={{
-                            fontSize: '32px',
+                            fontSize: isMobile ? '24px' : '32px',
                             fontWeight: '500',
                             color: 'var(--color-text-main)',
                             letterSpacing: '-0.04em',
@@ -77,15 +77,16 @@ const DonationSection = () => {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         style={{
-                            padding: '1.2rem 3rem',
+                            padding: isMobile ? '1rem 2rem' : '1.2rem 3rem',
                             backgroundColor: 'var(--color-text-main)',
                             color: 'var(--color-bg-base)',
                             borderRadius: '10px',
                             border: 'none',
-                            fontSize: '1.1rem',
+                            fontSize: isMobile ? '1rem' : '1.1rem',
                             fontWeight: '600',
                             cursor: 'pointer',
-                            transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+                            transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                            width: isMobile ? '100%' : 'auto'
                         }}
                         onClick={() => setIsModalOpen(true)}
                     >
@@ -94,9 +95,11 @@ const DonationSection = () => {
 
                     <div style={{
                         marginTop: '16px',
-                        fontSize: '13px',
+                        fontSize: isMobile ? '12px' : '13px',
                         color: 'var(--color-text-muted)',
-                        fontWeight: '500'
+                        fontWeight: '500',
+                        maxWidth: isMobile ? '250px' : 'none',
+                        margin: '0 auto'
                     }}>
                         {t({
                             en: "100% of contributions fund team building & R&D for hiro.",

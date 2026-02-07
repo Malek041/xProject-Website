@@ -15,6 +15,13 @@ const FrameworkDetail = () => {
     const { t } = useLanguage();
     const { currentUser } = useAuth();
     const framework = frameworkData[id];
+    const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 768);
+
+    React.useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         if (framework) {
@@ -67,7 +74,7 @@ const FrameworkDetail = () => {
         }}>
             {/* Minimal Premium Header */}
             <header style={{
-                padding: '24px 40px',
+                padding: isMobile ? '16px 20px' : '24px 40px',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
@@ -143,7 +150,7 @@ const FrameworkDetail = () => {
             <main style={{
                 maxWidth: '900px',
                 margin: '0 auto',
-                padding: '80px 40px',
+                padding: isMobile ? '40px 20px' : '80px 40px',
                 width: '100%'
             }}>
                 <FadeIn direction="up" distance={30}>
@@ -158,21 +165,21 @@ const FrameworkDetail = () => {
                         {t(framework.subtitle)}
                     </p>
                     <h1 style={{
-                        fontSize: '56px',
+                        fontSize: isMobile ? '32px' : '56px',
                         fontWeight: '850',
-                        lineHeight: '1.05',
+                        lineHeight: '1.1',
                         letterSpacing: '-0.04em',
-                        marginBottom: '32px',
+                        marginBottom: '24px',
                         color: 'var(--color-text-main)'
                     }}>
                         {t(framework.title)}
                     </h1>
                     <p style={{
-                        fontSize: '20px',
+                        fontSize: isMobile ? '16px' : '20px',
                         lineHeight: '1.5',
                         color: 'var(--color-text-muted)',
                         maxWidth: '700px',
-                        marginBottom: '64px'
+                        marginBottom: isMobile ? '40px' : '64px'
                     }}>
                         {t(framework.description)}
                     </p>
@@ -187,8 +194,8 @@ const FrameworkDetail = () => {
                     <FadeIn delay={0.2}>
                         <div style={{
                             backgroundColor: 'var(--color-bg-sidebar)',
-                            borderRadius: '32px',
-                            padding: '40px',
+                            borderRadius: isMobile ? '20px' : '32px',
+                            padding: isMobile ? '16px' : '40px',
                             border: 'var(--border-notion)',
                             overflow: 'hidden',
                             display: 'flex',
@@ -243,10 +250,10 @@ const FrameworkDetail = () => {
                 <FadeIn delay={0.7} direction="up">
                     <div style={{
                         textAlign: 'center',
-                        padding: '100px 0',
+                        padding: isMobile ? '60px 0' : '100px 0',
                         borderTop: 'var(--border-notion)'
                     }}>
-                        <h2 style={{ fontSize: '32px', marginBottom: '24px', letterSpacing: '-0.02em' }}>
+                        <h2 style={{ fontSize: isMobile ? '24px' : '32px', marginBottom: '24px', letterSpacing: '-0.02em' }}>
                             {t({
                                 en: "Ready to systemise?",
                                 fr: "Prêt à systématiser ?"

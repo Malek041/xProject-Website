@@ -11,6 +11,13 @@ const SignUp = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+    React.useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const handleGoogleSignUp = async () => {
         try {
@@ -32,7 +39,7 @@ const SignUp = () => {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            padding: '4rem 2rem'
+            padding: isMobile ? '2rem 1.5rem' : '4rem 2rem'
         }}>
             {/* Logo */}
             <div
@@ -43,8 +50,8 @@ const SignUp = () => {
                     gap: '0.5rem',
                     cursor: 'pointer',
                     fontWeight: 700,
-                    fontSize: '1.2rem',
-                    marginBottom: '4rem',
+                    fontSize: isMobile ? '1.1rem' : '1.2rem',
+                    marginBottom: isMobile ? '2.5rem' : '4rem',
                     letterSpacing: '-0.02em'
                 }}
             >
@@ -74,7 +81,7 @@ const SignUp = () => {
             }}>
                 <FadeIn direction="up" distance={20}>
                     <h1 style={{
-                        fontSize: '2.5rem',
+                        fontSize: isMobile ? '2rem' : '2.5rem',
                         fontWeight: 800,
                         lineHeight: '1.1',
                         marginBottom: '1rem',

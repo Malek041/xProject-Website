@@ -6,6 +6,14 @@ import { useNavigate } from 'react-router-dom';
 const ResourceSection = () => {
     const { t } = useLanguage();
     const navigate = useNavigate();
+    const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 768);
+
+    React.useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     const resources = [
         {
             id: 'ccf-framework',
@@ -38,7 +46,7 @@ const ResourceSection = () => {
 
     return (
         <section style={{
-            padding: '100px 20px',
+            padding: isMobile ? '60px 20px' : '100px 20px',
             backgroundColor: 'var(--color-bg-base)',
             fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
             display: 'flex',
@@ -48,10 +56,10 @@ const ResourceSection = () => {
         }}>
             <h2 style={{
                 textAlign: 'center',
-                fontSize: '44px',
+                fontSize: isMobile ? '32px' : '44px',
                 maxWidth: '900px',
                 fontWeight: '800',
-                marginBottom: '64px',
+                marginBottom: isMobile ? '40px' : '64px',
                 color: 'var(--color-text-main)',
                 letterSpacing: '-0.03em'
             }}>
@@ -60,7 +68,7 @@ const ResourceSection = () => {
 
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
+                gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(360px, 1fr))',
                 gap: '24px',
                 width: '100%',
                 maxWidth: '1200px'
@@ -78,14 +86,14 @@ const ResourceSection = () => {
                             borderRadius: '30px',
                             display: 'flex',
                             flexDirection: 'column',
-                            minHeight: '480px',
+                            minHeight: isMobile ? '400px' : '480px',
                             overflow: 'hidden',
                             position: 'relative',
                             cursor: 'pointer',
                             border: 'var(--border-notion)'
                         }}
                     >
-                        <div style={{ padding: '36px 36px 20px 36px' }}>
+                        <div style={{ padding: isMobile ? '24px 24px 16px 24px' : '36px 36px 20px 36px' }}>
                             <h3 style={{
                                 fontSize: '22px',
                                 fontWeight: '700',
@@ -111,7 +119,7 @@ const ResourceSection = () => {
 
                         <div style={{
                             flex: 1,
-                            margin: '10px 36px 0 36px',
+                            margin: isMobile ? '10px 24px 0 24px' : '10px 36px 0 36px',
                             backgroundColor: 'var(--color-bg-base)',
                             borderRadius: '30px 30px 0 0',
                             padding: '24px',

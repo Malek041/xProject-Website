@@ -12,9 +12,16 @@ const Application = () => {
     const [step, setStep] = useState(0);
     const [formData, setFormData] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const { t, lang } = useLanguage();
     const { currentUser } = useAuth();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const questions = [
         {
@@ -210,25 +217,25 @@ const Application = () => {
                             {currentQuestion.type === 'single' && (
                                 <div style={{
                                     display: 'grid',
-                                    gap: '0.75rem',
-                                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))'
+                                    gap: isMobile ? '0.6rem' : '0.75rem',
+                                    gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))'
                                 }}>
                                     {currentQuestion.options.map((opt) => (
                                         <motion.div
                                             key={opt.id}
-                                            whileHover={{ backgroundColor: 'var(--color-hover-overlay)', borderColor: 'var(--color-notion-blue)' }}
+                                            whileHover={!isMobile ? { backgroundColor: 'var(--color-hover-overlay)', borderColor: 'var(--color-notion-blue)' } : {}}
                                             whileTap={{ scale: 0.99 }}
                                             onClick={() => handleOptionSelect(currentQuestion.id, opt.id)}
                                             style={{
                                                 backgroundColor: 'var(--color-bg-surface)',
-                                                padding: '1.5rem',
+                                                padding: isMobile ? '1.25rem' : '1.5rem',
                                                 borderRadius: '6px',
                                                 cursor: 'pointer',
                                                 display: 'flex',
-                                                flexDirection: 'column',
+                                                flexDirection: isMobile ? 'row' : 'column',
                                                 alignItems: 'center',
-                                                gap: '1rem',
-                                                textAlign: 'center',
+                                                gap: isMobile ? '1rem' : '1rem',
+                                                textAlign: isMobile ? 'left' : 'center',
                                                 border: '1px solid var(--color-border-default)',
                                                 transition: 'all 0.15s ease',
                                                 boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
@@ -298,8 +305,8 @@ const Application = () => {
                                 <>
                                     <div style={{
                                         display: 'grid',
-                                        gap: '0.75rem',
-                                        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                                        gap: isMobile ? '0.6rem' : '0.75rem',
+                                        gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(180px, 1fr))',
                                         marginBottom: '2rem'
                                     }}>
                                         {currentQuestion.options.map((opt) => {
@@ -310,7 +317,7 @@ const Application = () => {
                                                     onClick={() => handleMultiSelect(currentQuestion.id, opt.id)}
                                                     style={{
                                                         backgroundColor: isSelected ? 'var(--color-bg-accent-blue-light)' : 'var(--color-bg-surface)',
-                                                        padding: '1rem',
+                                                        padding: isMobile ? '0.8rem 1rem' : '1rem',
                                                         borderRadius: '6px',
                                                         cursor: 'pointer',
                                                         textAlign: 'center',
@@ -318,7 +325,7 @@ const Application = () => {
                                                         color: isSelected ? 'var(--color-notion-blue)' : 'var(--color-text-main)',
                                                         transition: 'all 0.15s ease',
                                                         fontWeight: '500',
-                                                        fontSize: '0.95rem',
+                                                        fontSize: isMobile ? '0.9rem' : '0.95rem',
                                                         boxShadow: isSelected ? 'none' : '0 1px 2px rgba(0,0,0,0.05)'
                                                     }}
                                                 >

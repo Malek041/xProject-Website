@@ -368,19 +368,19 @@ const HowToUse = () => {
                     id: 4,
                     title: { en: 'Brainstorm Tasks', fr: 'Brainstorming des tâches' },
                     description: { en: 'Drill down into every sub-activity and task happening in your business.', fr: 'Analysez chaque sous-activité et tâche se déroulant dans votre entreprise.' },
-                    video: '/videos/Videos for Web/Brainstorm as much sub-activities or tasks as possible .mov'
+                    video: '/videos/brainstorm-tasks.mp4'
                 },
                 {
                     id: 5,
                     title: { en: 'Capture Methods', fr: 'Méthodes de capture' },
                     description: { en: 'Choose the most efficient way to record each specific process.', fr: 'Choisissez le moyen le plus efficace d\'enregistrer chaque processus spécifique.' },
-                    video: '/videos/Videos for Web/Define Capture method for each sub-activity.mov'
+                    video: '/videos/capture-methods.mp4'
                 },
                 {
                     id: 6,
                     title: { en: 'Set Standards', fr: 'Définir les normes' },
                     description: { en: 'Define what a "win" looks like for every single task in your library.', fr: 'Définissez ce qu\'est une « réussite » pour chaque tâche de votre bibliothèque.' },
-                    video: '/videos/Videos for Web/Set a standard for each sub-activity.mov'
+                    video: '/videos/set-standards.mp4'
                 }
             ]
         },
@@ -394,19 +394,19 @@ const HowToUse = () => {
                     id: 7,
                     title: { en: 'Execute Checklist', fr: 'Exécuter la liste de contrôle' },
                     description: { en: 'Follow the generated checklist to ensure nothing is missed during extraction.', fr: 'Suivez la liste de contrôle générée pour vous assurer que rien n\'est oublié lors de l\'extraction.' },
-                    video: '/videos/Videos for Web/Execute the checklist.mov'
+                    video: '/videos/execute-checklist.mp4'
                 },
                 {
                     id: 8,
                     title: { en: 'Organize Systems', fr: 'Organiser les systèmes' },
                     description: { en: 'Keep your systems accessible and structured in the SystemHUB.', fr: 'Gardez vos systèmes accessibles et structurés dans le SystemHUB.' },
-                    video: '/videos/Videos for Web/Organize your the systems you extracted.mov'
+                    video: '/videos/organize-systems.mp4'
                 },
                 {
                     id: 9,
                     title: { en: 'Integrate & Adopt', fr: 'Intégrer et Adopter' },
                     description: { en: 'Turn your documentation into standard habits for your entire team.', fr: 'Transformez votre documentation en habitudes standard pour toute votre équipe.' },
-                    video: '/videos/Videos for Web/Integrate the extracted systems using checklist.mov'
+                    video: '/videos/integrate-systems.mp4'
                 }
             ]
         }
@@ -414,7 +414,7 @@ const HowToUse = () => {
 
     return (
         <section style={{
-            padding: isMobile ? '2.5rem 3rem' : '6rem 2rem',
+            padding: isMobile ? '3rem 1.5rem' : '6rem 2rem',
             backgroundColor: 'var(--color-bg-sidebar)',
             display: 'flex',
             flexDirection: 'column',
@@ -428,7 +428,7 @@ const HowToUse = () => {
                         fontWeight: 800,
                         letterSpacing: '-0.04em',
                         color: 'var(--color-text-main)',
-                        marginBottom: isMobile ? '1rem' : '1.5rem'
+                        marginBottom: isMobile ? '0.5rem' : '1.5rem'
                     }}>
                         {t({ en: "How to use it", fr: "Comment l'utiliser" })}
                     </h2>
