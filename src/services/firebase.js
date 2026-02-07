@@ -8,7 +8,7 @@ import { getFirestore } from "firebase/firestore";
   Get these from: Firebase Console -> Project Settings -> General -> Your apps
 */
 const firebaseConfig = {
-  apiKey: "AIzaSyAK3lark01UEW0kze668juGaGj4F0gaERc",
+  apiKey: "AIzaSyAK31ark01UEW0kze668juGaGj4F0gaERc",
   authDomain: "xproject-ac0a5.firebaseapp.com",
   projectId: "xproject-ac0a5",
   storageBucket: "xproject-ac0a5.firebasestorage.app",
