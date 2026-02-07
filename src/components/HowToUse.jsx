@@ -342,19 +342,19 @@ const HowToUse = () => {
                     id: 1,
                     title: { en: 'Define your Mission', fr: 'Définissez votre mission' },
                     description: { en: 'Set the absolute foundation for your business growth before you start mapping systems.', fr: 'Posez les bases absolues de la croissance de votre entreprise avant de commencer à cartographier les systèmes.' },
-                    video: 'videos/Videos for Web/Define Mission and Get Ready.mov'
+                    video: '/videos/intro-dark.mp4'
                 },
                 {
                     id: 2,
                     title: { en: 'Revenue Systems', fr: 'Systèmes de revenus' },
                     description: { en: 'Map your current money-making flows with AI-guided precision.', fr: 'Cartographiez vos flux de revenus actuels avec une précision guidée par l\'IA.' },
-                    video: '/videos/Videos for Web/Define CCF.mov'
+                    video: '/videos/define-dark.mp4'
                 },
                 {
                     id: 3,
                     title: { en: 'Assign Ownership', fr: 'Assigner les responsabilités' },
                     description: { en: 'Clarify exactly who is responsible for each department in your organization.', fr: 'Clarifiez exactement qui est responsable de chaque département dans votre organisation.' },
-                    video: '/videos/Videos for Web/Assign Dark Mode.mov'
+                    video: '/videos/assign-dark.mp4'
                 }
             ]
         },

@@ -71,7 +71,7 @@ const Hero = () => {
                         }}
                     >
                         <video autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }}>
-                            <source src="/videos/kling_20260207_Image_to_Video_It_moves_f_3954_0.mp4" type="video/mp4" />
+                            <source src="/videos/avatar-left.mp4" type="video/mp4" />
                         </video>
                     </motion.div>
 
@@ -93,7 +93,7 @@ const Hero = () => {
                         }}
                     >
                         <video autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }}>
-                            <source src="/videos/Animated avatars/kling_20260207_Image_to_Video_It_moves_f_4075_0.mp4" type="video/mp4" />
+                            <source src="/videos/avatar-front.mp4" type="video/mp4" />
                         </video>
                     </motion.div>
 
@@ -118,7 +118,7 @@ const Hero = () => {
                         }}
                     >
                         <video autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }}>
-                            <source src="/videos/Videos for Web/kling_20260207_Image_to_Video_Wise__focu_4216_0.mp4" type="video/mp4" />
+                            <source src="/videos/avatar-right.mp4" type="video/mp4" />
                         </video>
                     </motion.div>
                 </div>
@@ -233,7 +233,7 @@ const Hero = () => {
                     }}>
                         <video
                             ref={videoRef}
-                            src="/videos/Animated avatars/Dark SOPBuilder Demo.mov"
+                            src="/videos/intro-dark.mp4"
                             autoPlay
                             loop
                             muted

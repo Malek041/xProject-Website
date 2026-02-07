@@ -22,10 +22,18 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-# Videos
+# Videos (block all by default)
 *.mp4
 *.mov
 public/videos/
+
+# EXCEPTIONS: Allow small homepage videos (<4MB)
+!public/videos/intro-dark.mp4
+!public/videos/define-dark.mp4
+!public/videos/assign-dark.mp4
+!public/videos/avatar-front.mp4
+!public/videos/avatar-left.mp4
+!public/videos/avatar-right.mp4
 
 # Large generated images (use CDN or external storage)
 public/images/verify_*.webp
