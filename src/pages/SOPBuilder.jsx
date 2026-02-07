@@ -2074,12 +2074,13 @@ const SOPBuilder = () => {
                     />
                 )}
 
-                {/* Phase Video Demo - Shows beside Expert Box */}
+                {/* Phase Video Demo - DISABLED per user request
                 <PhaseVideoDemo
                     phase={currentPhaseForVideo}
                     isShowing={showPhaseVideo}
                     onComplete={() => setShowPhaseVideo(false)}
                 />
+                */}
 
                 {/* hiroor Marketplace Modal */}
                 <HiroorModal

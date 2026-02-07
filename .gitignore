@@ -34,6 +34,7 @@ public/videos/
 !public/videos/avatar-front.mp4
 !public/videos/avatar-left.mp4
 !public/videos/avatar-right.mp4
+!public/videos/expert-avatar.mp4
 
 # Large generated images (use CDN or external storage)
 public/images/verify_*.webp

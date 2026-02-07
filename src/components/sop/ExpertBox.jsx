@@ -363,7 +363,7 @@ const ExpertBox = ({ state, onAction, onSubmit, phase, activeSystemName, project
                                     overflow: 'hidden'
                                 }}>
                                     <video autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }}>
-                                        <source src="/videos/Videos for Web/kling_20260207_Image_to_Video_Wise__focu_4216_0.mp4" type="video/mp4" />
+                                        <source src="/videos/expert-avatar.mp4" type="video/mp4" />
                                     </video>
                                 </div>
                                 <h1 style={{ fontSize: '28px', fontWeight: '800', color: colors.text, marginBottom: '10px', letterSpacing: '-0.03em', lineHeight: '1.1' }}>
@@ -404,7 +404,7 @@ const ExpertBox = ({ state, onAction, onSubmit, phase, activeSystemName, project
                                             overflow: 'hidden'
                                         }}>
                                             <video autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }}>
-                                                <source src="/videos/Videos for Web/kling_20260207_Image_to_Video_Wise__focu_4216_0.mp4" type="video/mp4" />
+                                                <source src="/videos/expert-avatar.mp4" type="video/mp4" />
                                             </video>
                                         </div>
                                         <span style={{ fontSize: '20px', fontWeight: '900', color: colors.text }}>hiro Aleph</span>
@@ -624,7 +624,7 @@ const ExpertBox = ({ state, onAction, onSubmit, phase, activeSystemName, project
                     }}
                 >
                     <video autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }}>
-                        <source src="videos/Animated avatars/kling_20260207_Image_to_Video_It_moves_f_4075_0.mp4" type="video/mp4" />
+                        <source src="/videos/expert-avatar.mp4" type="video/mp4" />
                     </video>
                 </motion.div>
             ) : (
