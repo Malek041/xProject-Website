@@ -11,6 +11,7 @@ import Typewriter from '../components/Typewriter';
 const Application = () => {
     const [step, setStep] = useState(0);
     const [formData, setFormData] = useState({});
+    const [whatsappNumber, setWhatsappNumber] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const { t, lang } = useLanguage();
@@ -132,8 +133,6 @@ const Application = () => {
         }
 
         setIsSubmitting(true);
-        const formElement = e.target;
-        const whatsappNumber = formElement[0].value;
 
         const finalData = {
             ...formData,
@@ -143,15 +142,28 @@ const Application = () => {
             userEmail: currentUser.email
         };
 
+        console.log('Attempting to save application:', finalData);
+
         try {
             // Store in Firebase
-            await setDoc(doc(db, 'applications', currentUser.uid), finalData);
+            const docRef = doc(db, 'applications', currentUser.uid);
+            await setDoc(docRef, finalData);
+
+            // Update local user object property (optional, but helps immediately)
             currentUser.hasCompletedApplication = true;
+
             console.log('Application saved to Firebase and state updated');
             navigate('/sop-builder');
         } catch (error) {
-            console.error('Error saving application:', error);
-            alert('Failed to save application. Please try again.');
+            console.error('FIREBASE ERROR:', error);
+            console.log('Error code:', error.code);
+            console.log('Error message:', error.message);
+
+            if (error.code === 'permission-denied') {
+                alert('Permission denied (403). Please make sure Firestore rules allow writing to the "applications" collection.');
+            } else {
+                alert(`Failed to save application: ${error.message}`);
+            }
         } finally {
             setIsSubmitting(false);
         }
@@ -380,6 +392,8 @@ const Application = () => {
                                 <input
                                     required
                                     type="tel"
+                                    value={whatsappNumber}
+                                    onChange={(e) => setWhatsappNumber(e.target.value)}
                                     placeholder={t({ en: "WhatsApp Number (+212...)", fr: "Numéro WhatsApp (+212...)" })}
                                     pattern="[+][0-9]{1,4}[0-9]{9,}"
                                     title="Please enter a valid phone number with country code (e.g., +212612345678)"

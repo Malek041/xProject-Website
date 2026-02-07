@@ -1,17 +1,25 @@
 import React, { useState } from 'react';
 import { auth, googleProvider } from '../services/firebase';
-import { signInWithPopup, createUserWithEmailAndPassword } from 'firebase/auth';
+import { signInWithPopup } from 'firebase/auth';
 import { useLanguage } from '../context/LanguageContext';
 import { useNavigate } from 'react-router-dom';
-import Typewriter from '../components/Typewriter';
 import FadeIn from '../components/FadeIn';
+import { useAuth } from '../context/AuthContext';
 
 const SignUp = () => {
     const { t } = useLanguage();
     const navigate = useNavigate();
-    const [loading, setLoading] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+    const { currentUser, loading: authLoading } = useAuth();
+
+    React.useEffect(() => {
+        if (!authLoading && currentUser) {
+            navigate('/sop-builder');
+        }
+    }, [currentUser, authLoading, navigate]);
 
     React.useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -22,7 +30,7 @@ const SignUp = () => {
     const handleGoogleSignUp = async () => {
         try {
             await signInWithPopup(auth, googleProvider);
-            navigate('/sop-builder');
+            // Navigation will be handled by the useEffect above once state updates
         } catch (err) {
             console.error(err);
             setError(err.message);

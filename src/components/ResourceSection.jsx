@@ -2,10 +2,13 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '../context/LanguageContext';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext';
 
 const ResourceSection = () => {
     const { t } = useLanguage();
     const navigate = useNavigate();
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
     const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 768);
 
     React.useEffect(() => {
@@ -59,12 +62,24 @@ const ResourceSection = () => {
                 fontSize: isMobile ? '32px' : '44px',
                 maxWidth: '900px',
                 fontWeight: '800',
-                marginBottom: isMobile ? '40px' : '64px',
+                marginBottom: '12px',
                 color: 'var(--color-text-main)',
                 letterSpacing: '-0.03em'
             }}>
                 {t({ en: "Dive deeper.", fr: "Approfondissez." })}
             </h2>
+            <p style={{
+                textAlign: 'center',
+                fontSize: isMobile ? '16px' : '18px',
+                color: 'var(--color-text-muted)',
+                marginBottom: isMobile ? '40px' : '64px',
+                maxWidth: '600px'
+            }}>
+                {t({
+                    en: "Learn the frameworks used by our hiro Aleph model",
+                    fr: "Découvrez les cadres utilisés par notre modèle hiro Aleph"
+                })}
+            </p>
 
             <div style={{
                 display: 'grid',
@@ -117,30 +132,36 @@ const ResourceSection = () => {
                             </div>
                         </div>
 
-                        <div style={{
-                            flex: 1,
-                            margin: isMobile ? '10px 24px 0 24px' : '10px 36px 0 36px',
-                            backgroundColor: 'var(--color-bg-base)',
-                            borderRadius: '30px 30px 0 0',
-                            padding: '24px',
-                            boxShadow: 'var(--shadow-notion)',
-                            border: 'var(--border-notion)',
-                            borderBottom: 'none',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            overflow: 'hidden'
-                        }}>
+                        <motion.div
+                            style={{
+                                flex: 1,
+                                margin: isMobile ? '0 24px 24px 24px' : '0 36px 36px 36px',
+                                backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+                                borderRadius: '24px',
+                                padding: isMobile ? '20px' : '40px',
+                                border: 'var(--border-notion)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                overflow: 'hidden',
+                                position: 'relative',
+                                boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.02)'
+                            }}
+                            whileHover={{ scale: 1.02 }}
+                            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                        >
                             <img
                                 src={res.image}
                                 alt={res.title}
                                 style={{
                                     width: '100%',
-                                    height: '100%',
-                                    objectFit: 'contain'
+                                    height: 'auto',
+                                    borderRadius: '12px',
+                                    boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
+                                    border: 'var(--border-notion)'
                                 }}
                             />
-                        </div>
+                        </motion.div>
                     </motion.div>
                 ))}
             </div>

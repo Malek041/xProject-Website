@@ -292,10 +292,27 @@ const AppSidebar = ({
                             alignItems: 'center',
                             justifyContent: 'center',
                             minWidth: '44px',
-                            minHeight: '44px'
+                            minHeight: '44px',
+                            position: 'relative'
                         }}
                     >
                         <PanelLeft size={24} strokeWidth={2} />
+                        {isOpen && (
+                            <span style={{
+                                position: 'absolute',
+                                left: '48px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                fontSize: '10px',
+                                padding: '2px 8px',
+                                backgroundColor: 'var(--color-primary)',
+                                color: 'white',
+                                borderRadius: '100px',
+                                letterSpacing: '0.05em',
+                                fontWeight: '800',
+                                whiteSpace: 'nowrap'
+                            }}>BETA TEST</span>
+                        )}
                     </button>
 
                     <div style={{

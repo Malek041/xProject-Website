@@ -143,6 +143,17 @@ const AlephSection = () => {
                             }}>
                                 <Zap size={16} />
                                 {t({ en: "INTRODUCING ALEPH1", fr: "PRÉSENTATION D'ALEPH1" })}
+                                <span style={{
+                                    fontSize: '10px',
+                                    padding: '2px 10px',
+                                    backgroundColor: 'var(--color-primary)',
+                                    color: 'white',
+                                    borderRadius: '100px',
+                                    letterSpacing: '0.05em',
+                                    fontWeight: '800',
+                                    marginLeft: '8px',
+                                    boxShadow: '0 2px 10px rgba(2, 101, 210, 0.2)'
+                                }}>STILL IN BETA TEST</span>
                             </div>
                             <h3 style={{
                                 fontSize: isMobile ? '1.5rem' : '2.2rem',
