@@ -30,19 +30,16 @@ import FrameworkDetail from './pages/FrameworkDetail';
 
 const Layout = ({ children }) => {
   const location = useLocation();
-  const hideHeaderCTA = location.pathname === '/projects' ||
-    location.pathname.startsWith('/sop-builder') ||
-    location.pathname === '/application' ||
-    location.pathname === '/signup' ||
-    location.pathname === '/results';
+  const isSOPBuilder = location.pathname.startsWith('/sop-builder');
+  const isMinimalPage = ['/signup', '/application', '/results'].includes(location.pathname);
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {!hideHeaderCTA && <Header />}
+      {!isSOPBuilder && <Header minimal={isMinimalPage} />}
       <div style={{ flex: 1 }}>
         {children}
       </div>
-      {!hideHeaderCTA && <CTA />}
+      {!isSOPBuilder && !isMinimalPage && <CTA />}
     </div>
   );
 };

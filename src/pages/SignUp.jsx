@@ -47,40 +47,8 @@ const SignUp = () => {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            padding: isMobile ? '2rem 1.5rem' : '4rem 2rem'
+            padding: isMobile ? '7rem 1.5rem 2rem' : '10rem 2rem 4rem'
         }}>
-            {/* Logo */}
-            <div
-                onClick={() => navigate('/')}
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    cursor: 'pointer',
-                    fontWeight: 700,
-                    fontSize: isMobile ? '1.1rem' : '1.2rem',
-                    marginBottom: isMobile ? '2.5rem' : '4rem',
-                    letterSpacing: '-0.02em'
-                }}
-            >
-                <div style={{
-                    width: '24px',
-                    height: '24px',
-                    borderRadius: '6px',
-                    overflow: 'hidden',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                }}>
-                    <img
-                        src="/images/Avatar Photos/Logo Avatar.jpg"
-                        alt="Logo"
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                </div>
-                hiro
-            </div>
-
             <div style={{
                 width: '100%',
                 maxWidth: '400px',

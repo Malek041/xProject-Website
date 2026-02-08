@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 
-const Header = () => {
+const Header = ({ minimal = false }) => {
   const [scrolled, setScrolled] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const { lang, toggleLanguage, t } = useLanguage();
@@ -32,11 +32,11 @@ const Header = () => {
       left: 0,
       width: '100%',
       padding: isMobile ? '0.5rem 0' : '0.75rem 0',
-      backgroundColor: 'var(--color-bg-translucent)',
-      backdropFilter: 'blur(8px)',
+      backgroundColor: minimal ? 'transparent' : 'var(--color-bg-translucent)',
+      backdropFilter: minimal ? 'none' : 'blur(8px)',
       zIndex: 1000,
       transition: 'var(--transition-smooth)',
-      borderBottom: scrolled ? 'var(--border-notion)' : '1px solid transparent'
+      borderBottom: (scrolled && !minimal) ? 'var(--border-notion)' : '1px solid transparent'
     }}>
       <div className="container" style={{
         display: 'flex',
@@ -79,45 +79,49 @@ const Header = () => {
         </div>
 
         <nav style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0.25rem' : '0.75rem' }}>
-          {!isMobile && (
-            <Link
-              to="/signup"
-              style={{
-                padding: '0.4rem 0.75rem',
-                fontSize: '0.9rem',
-                fontWeight: '500',
-                color: 'var(--color-text-main)',
-                textDecoration: 'none',
-                borderRadius: '4px',
-                transition: 'background 0.2s ease'
-              }}
-              onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-hover-overlay)'}
-              onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-            >
-              {t({ en: "Log in", fr: "Connexion" })}
-            </Link>
+          {!minimal && (
+            <>
+              {!isMobile && (
+                <Link
+                  to="/signup"
+                  style={{
+                    padding: '0.4rem 0.75rem',
+                    fontSize: '0.9rem',
+                    fontWeight: '500',
+                    color: 'var(--color-text-main)',
+                    textDecoration: 'none',
+                    borderRadius: '4px',
+                    transition: 'background 0.2s ease'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-hover-overlay)'}
+                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  {t({ en: "Log in", fr: "Connexion" })}
+                </Link>
+              )}
+
+              <Link
+                to="/signup"
+                style={{
+                  padding: isMobile ? '0.3rem 0.6rem' : '0.4rem 0.8rem',
+                  fontSize: isMobile ? '0.8rem' : '0.9rem',
+                  fontWeight: '600',
+                  backgroundColor: 'var(--color-notion-blue)',
+                  color: 'var(--color-bg-base)',
+                  borderRadius: '4px',
+                  textDecoration: 'none',
+                  transition: 'opacity 0.2s ease',
+                  whiteSpace: 'nowrap'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.opacity = '0.9'}
+                onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
+              >
+                {isMobile ? t({ en: "Get free", fr: "Gratuit" }) : t({ en: "Get hiro free", fr: "Obtenir hiro gratuitement" })}
+              </Link>
+            </>
           )}
 
-          <Link
-            to="/signup"
-            style={{
-              padding: isMobile ? '0.3rem 0.6rem' : '0.4rem 0.8rem',
-              fontSize: isMobile ? '0.8rem' : '0.9rem',
-              fontWeight: '600',
-              backgroundColor: 'var(--color-notion-blue)',
-              color: 'var(--color-bg-base)',
-              borderRadius: '4px',
-              textDecoration: 'none',
-              transition: 'opacity 0.2s ease',
-              whiteSpace: 'nowrap'
-            }}
-            onMouseOver={(e) => e.currentTarget.style.opacity = '0.9'}
-            onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
-          >
-            {isMobile ? t({ en: "Get free", fr: "Gratuit" }) : t({ en: "Get hiro free", fr: "Obtenir hiro gratuitement" })}
-          </Link>
-
-          {!isMobile && <div style={{ width: '1px', height: '20px', backgroundColor: 'var(--color-border-default)', margin: '0 4px' }} />}
+          {!isMobile && !minimal && <div style={{ width: '1px', height: '20px', backgroundColor: 'var(--color-border-default)', margin: '0 4px' }} />}
 
           <button
             onClick={toggleLanguage}

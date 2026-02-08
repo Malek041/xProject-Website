@@ -180,8 +180,7 @@ const Application = () => {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'center',
-            padding: '2rem'
+            padding: isMobile ? '7rem 1.5rem 3rem' : '8rem 2rem 4rem'
         }}>
             <div className="container" style={{ maxWidth: '800px', width: '100%' }}>
 
