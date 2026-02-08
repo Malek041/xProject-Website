@@ -36,6 +36,20 @@ const GoalSelection = ({ onSelect, projects = [], onSelectProject, onRemoveProje
             tag: t({ en: "Recommended", fr: "Recommandé" })
         },
         {
+            id: 4,
+            title: t({
+                en: "Systems for Growth",
+                fr: "Systèmes pour la Croissance"
+            }),
+            description: t({
+                en: "Document the critical systems (Finance, HR, Management) that allow your business to scale reliably.",
+                fr: "Documentez les systèmes critiques (Finance, RH, Gestion) qui permettent à votre entreprise de croître de manière fiable."
+            }),
+            icon: <Zap size={20} />,
+            enabled: true,
+            tag: t({ en: "Direct Access", fr: "Accès direct" })
+        },
+        {
             id: 2,
             title: t({
                 en: "Departmental Deep-Dive",

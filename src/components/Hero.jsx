@@ -125,7 +125,7 @@ const Hero = () => {
 
                 {/* Main Headline - Notion Style */}
                 <h1 style={{
-                    fontSize: isMobile ? '2.5rem' : '4.5rem',
+                    fontSize: isMobile ? '2rem' : '4.5rem',
                     fontWeight: 700,
                     lineHeight: '1',
                     letterSpacing: '-0.03em',

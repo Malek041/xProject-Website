@@ -1248,7 +1248,7 @@ const PreviewSpace = ({
                                 {phase.charAt(0).toUpperCase() + phase.slice(1)} Phase
                             </h2>
                             <p style={{ fontSize: '18px', maxWidth: '500px', lineHeight: '1.6', margin: 0 }}>
-                                {isDark ? "Ready to begin mapping your systems? Click 'Begin Work' in the Expert Box to reveal the framework." : "Prêt à commencer la cartographie de vos systèmes ? Cliquez sur 'Commencer' dans la boîte Expert pour révéler le cadre."}
+                                {isDark ? "Ready to begin mapping your systems?" : "Prêt à commencer la cartographie de vos systèmes ? Cliquez sur 'Commencer' dans la boîte Expert pour révéler le cadre."}
                             </p>
                             <div style={{
                                 marginTop: '20px',

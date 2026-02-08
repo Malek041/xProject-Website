@@ -264,15 +264,20 @@ const SOPBuilder = () => {
             setIsPhaseStarted(false);
             setExpertState({
                 isOpen: true,
-                message: t({
-                    en: `Switched to **${newTrack === 'growth' ? 'Systems for Growth' : 'Other Systems'}**.\n\nReady to begin?`,
-                    fr: `Passé à **${newTrack === 'growth' ? 'Systèmes pour la Croissance' : 'Autres Systèmes'}**.\n\nPrêt à commencer ?`
-                }),
+                message: newTrack === 'growth'
+                    ? t({
+                        en: "🚀 **Systems for Growth Unleashed!**\n\nReady to document the mission-critical systems in Finance, People, and Management that make your scaling effortless?",
+                        fr: "🚀 **Systèmes pour la Croissance Débloqués !**\n\nPrêt à documenter les systèmes critiques en Finance, RH et Gestion qui rendent votre croissance fluide ?"
+                    })
+                    : t({
+                        en: `Switched to **${newTrack === 'revenue' ? 'Revenue Systems' : 'Other Systems'}**.\n\nReady to begin?`,
+                        fr: `Passé aux **${newTrack === 'revenue' ? 'Systèmes de Revenus' : 'Autres Systèmes'}**.\n\nPrêt à commencer ?`
+                    }),
                 inputType: null,
                 inputAction: null,
                 options: newTrack === 'growth'
                     ? [{ label: t({ en: "Start Growth Definition", fr: "Démarrer la définition de croissance" }), action: 'define_growth_start' }]
-                    : [],
+                    : [{ label: t({ en: "Begin", fr: "Commencer" }), action: 'define_ready' }],
                 isTyping: false,
                 history: [],
                 mode: 'default'
@@ -817,8 +822,14 @@ const SOPBuilder = () => {
             isOpen: true,
             isTyping: true,
             message: activeTrack === 'growth'
-                ? `**Define Phase**\n\nIf you want powerful systems to achieve your goals and vision, you must first define the systems you already run.\nYour startup is already operating on systems—even if you don’t see them.\nThe Define phase makes those systems visible and isolates the few that actually matter.\nInstead of hundreds, we focus on the critical 10–15 that drive your core operations and growth.\n\n**Goal:** Map your Growth Systems across Finance, People, and Management to eliminate single-person dependency.\n\n**Key Principle:** The 80/20 rule — a small number of systems create most of the results.\n\nI’ll help you do that.`
-                : `**Define Phase**\n\nYou can’t build better systems without defining the ones you already use.\nYour business already works a certain way—intentional or not.\nThe Define phase reduces overwhelm by capturing the reality of how work is done today and narrowing it down to the few systems that actually drive revenue.\n\n**Goal:** Map your Critical Client Flow — the 7–12 real steps through which value is delivered.\n\n**Key Principle:** Keep it honest. Document what *is*, not what *should be*.\n\nI’ll help you do that.`,
+                ? t({
+                    en: "**Phase: Define (Growth Systems)**\n\nTo scale your vision, you must define the systems already running your startup—even the invisible ones.\n\nWe'll focus on the critical systems in **Finance, People, and Management** that eliminate single-person dependency and allow you to scale without bottlenecks.\n\nReady to map your growth engine?",
+                    fr: "**Phase : Définir (Systèmes de Croissance)**\n\nPour propulser votre vision, vous devez définir les systèmes qui font déjà tourner votre startup — même les invisibles.\n\nNous nous concentrerons sur les systèmes critiques en **Finance, RH et Gestion** qui éliminent la dépendance aux personnes clés et vous permettent de croître sans goulots d'étranglement.\n\nPrêt à cartographier votre moteur de croissance ?"
+                })
+                : t({
+                    en: "**Phase: Define (Revenue Systems)**\n\nYou can’t build better systems without defining the ones you already use.\n\nWe'll map your **Critical Client Flow**—the 7–12 real steps through which you deliver value and generate revenue today.\n\nReady to capture your current reality?",
+                    fr: "**Phase : Définir (Systèmes de Revenus)**\n\nImpossible de bâtir de meilleurs systèmes sans définir ceux que vous utilisez déjà.\n\nNous allons cartographier votre **Flux Client Critique** — les 7 à 12 étapes réelles par lesquelles vous livrez de la valeur et générez des revenus aujourd'hui.\n\nPrêt à capturer votre réalité actuelle ?"
+                }),
             inputType: null,
             options: [
                 { label: t({ en: 'Learn more', fr: 'En savoir plus' }), action: 'define_learn_more' },
@@ -1569,12 +1580,13 @@ const SOPBuilder = () => {
     const handleGoalSelect = (goalId) => {
         setSelectedGoal(goalId);
         setIsGoalSelected(true);
-        setSystemTrack('revenue');
+        const track = goalId === 4 ? 'growth' : 'revenue';
+        setSystemTrack(track);
         setPhase('define');
         setShowIntro(false);
         setIntroFinished(true);
         setHasAnsweredFirstQuestion(true);
-        startDefinePhase('revenue');
+        startDefinePhase(track);
     };
 
     const handleExpertAction = async (action, value) => {
@@ -1957,6 +1969,7 @@ const SOPBuilder = () => {
                     onSystemTrackChange={handleSystemTrackChange}
                     onPhaseClick={handlePhaseNavigate}
                     progress={calculateProgress()}
+                    isGoalSelected={isGoalSelected}
                 />
             </div>
 

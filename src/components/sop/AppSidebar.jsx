@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { signOut } from 'firebase/auth';
+import { auth } from '../../services/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
 import PhaseProgress from './PhaseProgress';
 import {
@@ -40,7 +42,8 @@ const AppSidebar = ({
     phase,
     systemTrack,
     onSystemTrackChange,
-    onPhaseClick
+    onPhaseClick,
+    isGoalSelected
 }) => {
     const navigate = useNavigate();
     const { t, lang, setLanguage } = useLanguage();
@@ -87,7 +90,14 @@ const AppSidebar = ({
             key: 'logout',
             icon: <LogOut size={16} strokeWidth={ICON_STROKE_WIDTH} />,
             label: t({ en: 'Go out', fr: 'Se déconnecter' }),
-            onClick: () => navigate('/signup')
+            onClick: async () => {
+                try {
+                    await signOut(auth);
+                    window.location.href = '/';
+                } catch (error) {
+                    console.error("Error signing out:", error);
+                }
+            }
         }
     ];
 
@@ -366,13 +376,25 @@ const AppSidebar = ({
 
 
                 {/* Phase Progress (Favorites / Private style) */}
-                <PhaseProgress
-                    currentPhase={phase}
-                    systemTrack={systemTrack}
-                    onSystemTrackChange={onSystemTrackChange}
-                    onPhaseClick={onPhaseClick}
-                    isSidebarOpen={isOpen}
-                />
+                <AnimatePresence>
+                    {isGoalSelected && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -20, height: 0 }}
+                            animate={{ opacity: 1, y: 0, height: 'auto' }}
+                            exit={{ opacity: 0, y: -20, height: 0 }}
+                            transition={{ duration: 0.5, ease: "circOut" }}
+                            style={{ overflow: 'hidden' }}
+                        >
+                            <PhaseProgress
+                                currentPhase={phase}
+                                systemTrack={systemTrack}
+                                onSystemTrackChange={onSystemTrackChange}
+                                onPhaseClick={onPhaseClick}
+                                isSidebarOpen={isOpen}
+                            />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 <AnimatePresence>
                     {isOpen && (
@@ -647,11 +669,13 @@ const AppSidebar = ({
                                     {menuItems.map((item, i) => (
                                         <div key={item.key || i}>
                                             <div
-                                                onClick={() => {
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
                                                     item.onClick?.();
                                                     if (item.key !== 'translate' && item.key !== 'settings') {
                                                         setShowLanguageMenu(false);
                                                         setShowSettingsMenu(false);
+                                                        setShowProfileMenu(false);
                                                     }
                                                     if (item.key === 'settings') {
                                                         setShowLanguageMenu(false);

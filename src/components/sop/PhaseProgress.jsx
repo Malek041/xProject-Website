@@ -131,7 +131,7 @@ const PhaseProgress = ({ currentPhase, onPhaseClick, isSidebarOpen, systemTrack 
                         return (
                             <button
                                 key={sys.id}
-                                onClick={() => !isGrowth && onSystemTrackChange?.(sys.id)}
+                                onClick={() => onSystemTrackChange?.(sys.id)}
                                 style={{
                                     flex: 1,
                                     padding: '6px 2px',
@@ -141,9 +141,9 @@ const PhaseProgress = ({ currentPhase, onPhaseClick, isSidebarOpen, systemTrack 
                                     border: 'none',
                                     textTransform: 'uppercase',
                                     backgroundColor: isActive ? COLOR_BG_WHITE : 'transparent',
-                                    color: isActive ? COLOR_TEXT : (isGrowth ? '#bcbbb5' : COLOR_GRAY),
+                                    color: isActive ? COLOR_TEXT : COLOR_GRAY,
                                     boxShadow: isActive ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                                    cursor: isGrowth ? 'not-allowed' : (onSystemTrackChange ? 'pointer' : 'default'),
+                                    cursor: onSystemTrackChange ? 'pointer' : 'default',
                                     transition: 'all 0.2s ease'
                                 }}
                             >

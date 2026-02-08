@@ -753,7 +753,7 @@ const ExpertBox = ({ state, onAction, onSubmit, phase, activeSystemName, project
                                                 handleSendMessage();
                                             }
                                         }}
-                                        placeholder={t({ en: "Ask AI...", fr: "Demandez à l'IA..." })}
+                                        placeholder={t({ en: "Answer...", fr: "Répondez..." })}
                                         rows={1}
                                         style={{
                                             width: '100%',
