@@ -270,6 +270,81 @@ const AlephSection = () => {
                             </div>
                         ))}
                     </div>
+
+                    {/* David Jenyns Credit Block */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        style={{
+                            marginTop: '6rem',
+                            display: 'flex',
+                            flexDirection: isMobile ? 'column' : 'row',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '2.5rem',
+                            padding: isMobile ? '2rem' : '4rem',
+                            backgroundColor: 'var(--color-bg-sidebar)',
+                            borderRadius: '24px',
+                            border: 'var(--border-notion)',
+                            textAlign: isMobile ? 'center' : 'left',
+                            maxWidth: '1000px',
+                            margin: '6rem auto 0'
+                        }}
+                    >
+                        <div style={{
+                            width: '140px',
+                            height: '140px',
+                            borderRadius: '50%',
+                            overflow: 'hidden',
+                            flexShrink: 0,
+                            border: '4px solid var(--color-bg-base)',
+                            boxShadow: 'var(--shadow-notion)'
+                        }}>
+                            <img
+                                src="/images/david_jenyns.jpg"
+                                alt="David Jenyns"
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    filter: 'grayscale(20%)'
+                                }}
+                            />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                            <div style={{
+                                fontSize: '0.8rem',
+                                color: 'var(--color-notion-blue)',
+                                fontWeight: 800,
+                                letterSpacing: '0.1em',
+                                marginBottom: '0.5rem',
+                                textTransform: 'uppercase'
+                            }}>
+                                {t({ en: "FRAMEWORK CREDIT", fr: "CRÉDIT DU MODÈLE" })}
+                            </div>
+                            <h4 style={{
+                                fontSize: isMobile ? '1.25rem' : '1.75rem',
+                                fontWeight: 700,
+                                marginBottom: '1rem',
+                                color: 'var(--color-text-main)',
+                                letterSpacing: '-0.02em'
+                            }}>
+                                {t({ en: "Masterfully Built on SYSTEMology.", fr: "Construit sur SYSTEMology." })}
+                            </h4>
+                            <p style={{
+                                fontSize: '1rem',
+                                color: 'var(--color-text-muted)',
+                                lineHeight: '1.6',
+                                fontWeight: 500
+                            }}>
+                                {t({
+                                    en: "hiro Aleph1 is built upon the mission-critical principles pioneered by David Jenyns in his book, SYSTEMology. We've digitized the world's most effective business architecture to help you achieve operational freedom.",
+                                    fr: "hiro Aleph1 est construit sur les principes fondamentaux initiés par David Jenyns dans son livre, SYSTEMology. Nous avons numérisé l'architecture d'entreprise la plus efficace au monde pour vous aider à atteindre la liberté opérationnelle."
+                                })}
+                            </p>
+                        </div>
+                    </motion.div>
                 </div>
             </div>
         </section>
