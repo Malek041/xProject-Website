@@ -309,7 +309,8 @@ const AlephSection = () => {
                                     width: '100%',
                                     height: '100%',
                                     objectFit: 'cover',
-                                    filter: 'grayscale(20%)'
+                                    objectPosition: 'center 20%', // Focus more on the face
+                                    transition: 'transform 0.3s ease'
                                 }}
                             />
                         </div>
