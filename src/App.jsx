@@ -31,6 +31,7 @@ import FrameworkDetail from './pages/FrameworkDetail';
 const Layout = ({ children }) => {
   const location = useLocation();
   const isSOPBuilder = location.pathname.startsWith('/sop-builder');
+  const isFrameworkPage = location.pathname.startsWith('/framework/');
   const isMinimalPage = ['/signup', '/application', '/results'].includes(location.pathname);
 
   return (
@@ -39,7 +40,7 @@ const Layout = ({ children }) => {
       <div style={{ flex: 1 }}>
         {children}
       </div>
-      {!isSOPBuilder && !isMinimalPage && <CTA />}
+      {!isSOPBuilder && !isMinimalPage && !isFrameworkPage && <CTA />}
     </div>
   );
 };
