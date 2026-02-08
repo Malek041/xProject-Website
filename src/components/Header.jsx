@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { Languages, MessageCircle, LogIn, Sun, Moon } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
