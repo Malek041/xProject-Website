@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { Languages, MessageCircle, LogIn } from 'lucide-react';
+import { Languages, MessageCircle, LogIn, Sun, Moon } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 
 const Header = () => {
   const [scrolled, setScrolled] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const { lang, toggleLanguage, t } = useLanguage();
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
-  const isApplyPage = location.pathname === '/application';
+  const isDark = theme === 'dark';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -134,6 +135,25 @@ const Header = () => {
             onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
           >
             <Languages size={18} />
+          </button>
+
+          <button
+            onClick={() => toggleTheme(isDark ? 'light' : 'dark')}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: '0.4rem',
+              cursor: 'pointer',
+              color: 'var(--color-grey-500)',
+              borderRadius: '4px',
+              transition: 'background 0.2s ease',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-hover-overlay)'}
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+          >
+            {isDark ? <Sun size={18} /> : <Moon size={18} />}
           </button>
         </nav>
       </div>
