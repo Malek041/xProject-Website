@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useLanguage } from '../context/LanguageContext';
 import { ArrowRight, Star, Bookmark, ShieldCheck, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import davidJenynsImg from '../assets/images/david_jenyns.jpg';
 
 
 
@@ -302,7 +303,7 @@ const AlephSection = () => {
                             boxShadow: 'var(--shadow-notion)'
                         }}>
                             <img
-                                src="/images/david_jenyns.jpg"
+                                src={davidJenynsImg}
                                 alt="David Jenyns"
                                 style={{
                                     width: '100%',
