@@ -723,8 +723,7 @@ const ExpertBox = ({ state, onAction, onSubmit, phase, activeSystemName, project
 
                     {/* --- Input Area (Stick to bottom) --- */}
                     {!isHistoryOpen &&
-                        !['goal-selection', 'multi-select', 'dynamic-steps', 'dynamic-list'].includes(state.inputType) &&
-                        !(state.options && state.options.length > 0 && messageTyped) && (
+                        !['goal-selection', 'multi-select', 'dynamic-steps', 'dynamic-list'].includes(state.inputType) && (
                             <div style={{
                                 padding: '12px 16px',
                                 borderTop: `1px solid ${colors.border}`,

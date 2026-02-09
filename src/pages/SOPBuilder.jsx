@@ -910,6 +910,7 @@ const SOPBuilder = () => {
                 data: { departments: depts },
                 options: [
                     { label: t({ en: 'Learn more', fr: 'En savoir plus' }), action: 'assign_learn_more' },
+                    { label: t({ en: '👤 I\'m a Solopreneur (Assign all to Me)', fr: '👤 Je suis Solopreneur (Tout m\'assigner)' }), action: 'assign_solopreneur' },
                     { label: t({ en: '🚀 Begin Work', fr: '🚀 Commencer' }), action: 'assign_ready' }
                 ],
                 inputAction: null
@@ -1744,6 +1745,29 @@ const SOPBuilder = () => {
                     options: [
                         { label: t({ en: '📖 Interactive Guide', fr: '📖 Guide interactif' }), action: 'teach_phase', value: 'extract' },
                         { label: t({ en: '🚀 Begin Work', fr: '🚀 Commencer' }), action: 'extract_ready' }
+                    ]
+                });
+                break;
+            case 'assign_solopreneur':
+                // Auto-assign "Me" to all departments
+                const soloDepts = [...documentData.departments].map(d => ({
+                    ...d,
+                    head: 'Me',
+                    worker: 'Me'
+                }));
+
+                setDocumentData(prev => ({ ...prev, departments: soloDepts }));
+
+                // Show confirmation and move to Extract
+                updateExpertWithThinking({
+                    ...expertState,
+                    message: t({
+                        en: "Got it! You are the Head and Expert for everything (for now). Let's move to Extraction.",
+                        fr: "Entendu ! Vous êtes le Responsable et l'Expert pour tout (pour l'instant). Passons à l'Extraction."
+                    }),
+                    inputType: null,
+                    options: [
+                        { label: t({ en: "Start Extract Phase", fr: "Démarrer Phase Extraction" }), action: 'start_extract' }
                     ]
                 });
                 break;
