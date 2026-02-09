@@ -12,7 +12,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { db } from '../services/firebase';
-import { collection, doc, setDoc, onSnapshot, addDoc, updateDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, onSnapshot, addDoc, updateDoc, query, where } from 'firebase/firestore';
 import { aiService } from '../services/aiService';
 
 const getTaskExamples = (responsibility = '', t) => {
@@ -291,9 +291,11 @@ const SOPBuilder = () => {
     useEffect(() => {
         if (!currentUser) return;
 
-        // Listen for remote changes in subcollection
-        const projectsRef = collection(db, 'users', currentUser.uid, 'projects');
-        const unsub = onSnapshot(projectsRef, (snapshot) => {
+        // Listen for remote changes in top-level 'projects' collection
+        const projectsRef = collection(db, 'projects');
+        const q = query(projectsRef, where('userId', '==', currentUser.uid));
+
+        const unsub = onSnapshot(q, (snapshot) => {
             if (snapshot.metadata.hasPendingWrites) return;
 
             const loadedProjects = snapshot.docs.map(doc => ({
@@ -333,14 +335,17 @@ const SOPBuilder = () => {
         if (!projectToSave) return;
 
         // Debounce or just save
-        // For subcollection, we update the specific document
-        const projectRef = doc(db, 'users', currentUser.uid, 'projects', String(currentProjectId));
+        // For top-level collection, update the specific document
+        const projectRef = doc(db, 'projects', String(currentProjectId));
 
         // We only save the data that changed, but for simplicity, we save the whole project data
         // Sanitize
         const sanitizedProject = JSON.parse(JSON.stringify(projectToSave));
         // Remove id from data if it's there, as it's the doc id
         delete sanitizedProject.id;
+
+        // Ensure userId is present (for safety)
+        sanitizedProject.userId = currentUser.uid;
 
         setDoc(projectRef, sanitizedProject, { merge: true })
             .catch(err => console.error("Error auto-saving project:", err));
@@ -420,7 +425,12 @@ const SOPBuilder = () => {
         // Let's use string ID for consistency
 
         if (currentUser) {
-            addDoc(collection(db, 'users', currentUser.uid, 'projects'), newProject)
+            const projectWithUser = {
+                ...newProject,
+                userId: currentUser.uid
+            };
+
+            addDoc(collection(db, 'projects'), projectWithUser)
                 .then(docRef => {
                     // Update local state with the new ID if we want, but the snapshot listener will catch it
                     // Actually, to switch immediately, we might want to set it
