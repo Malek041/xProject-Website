@@ -2,18 +2,16 @@ import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useLanguage } from '../context/LanguageContext';
-import { useAuth } from '../context/AuthContext';
-import { auth, googleProvider } from '../services/firebase';
-import { signInWithPopup } from 'firebase/auth';
+
 import { frameworkData } from '../data/frameworks';
 import FadeIn from '../components/FadeIn';
-import { ChevronLeft, ArrowRight } from 'lucide-react';
+
 
 const FrameworkDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { t } = useLanguage();
-    const { currentUser } = useAuth();
+
     const framework = frameworkData[id];
     const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 768);
 
@@ -54,14 +52,7 @@ const FrameworkDetail = () => {
         );
     }
 
-    const handleGoogleSignUp = async () => {
-        try {
-            await signInWithPopup(auth, googleProvider);
-            navigate('/sop-builder');
-        } catch (err) {
-            console.error(err);
-        }
-    };
+
 
     return (
         <div style={{
@@ -171,59 +162,7 @@ const FrameworkDetail = () => {
                     </div>
                 </div>
 
-                {/* Bottom CTA */}
-                <FadeIn delay={0.7} direction="up">
-                    <div style={{
-                        textAlign: 'center',
-                        padding: isMobile ? '60px 0' : '100px 0',
-                        borderTop: 'var(--border-notion)'
-                    }}>
-                        <h2 style={{
-                            fontSize: isMobile ? '40px' : '72px',
-                            lineHeight: '1.05',
-                            fontWeight: '850',
-                            marginBottom: '40px',
-                            letterSpacing: '-0.04em',
-                            color: 'var(--color-text-main)'
-                        }}>
-                            {t({
-                                en: "Ready to Grow your Business?",
-                                fr: "Prêt à faire croître votre entreprise ?"
-                            })}
-                        </h2>
-                        <button
-                            onClick={handleGoogleSignUp}
-                            style={{
-                                padding: '16px 32px',
-                                backgroundColor: 'var(--color-bg-base)',
-                                color: 'var(--color-text-main)',
-                                border: '1px solid var(--color-border-default)',
-                                borderRadius: '14px',
-                                fontSize: '18px',
-                                fontWeight: '700',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                                boxShadow: 'var(--shadow-notion)',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '12px'
-                            }}
-                            onMouseOver={(e) => {
-                                e.currentTarget.style.transform = 'translateY(-2px)';
-                                e.currentTarget.style.backgroundColor = 'var(--color-bg-sidebar)';
-                                e.currentTarget.style.boxShadow = '0 10px 30px rgba(0,0,0,0.1)';
-                            }}
-                            onMouseOut={(e) => {
-                                e.currentTarget.style.transform = 'translateY(0)';
-                                e.currentTarget.style.backgroundColor = 'var(--color-bg-base)';
-                                e.currentTarget.style.boxShadow = 'var(--shadow-notion)';
-                            }}
-                        >
-                            {t({ en: "Get Started Free", fr: "Démarrer gratuitement" })}
-                            <ArrowRight size={20} />
-                        </button>
-                    </div>
-                </FadeIn>
+
             </main>
 
             {/* Avatar Decoration */}

@@ -713,97 +713,99 @@ const ExpertBox = ({ state, onAction, onSubmit, phase, activeSystemName, project
                     {renderContent()}
 
                     {/* --- Input Area (Stick to bottom) --- */}
-                    {!isHistoryOpen && !['goal-selection', 'multi-select', 'dynamic-steps', 'dynamic-list'].includes(state.inputType) && (
-                        <div style={{
-                            padding: '12px 16px',
-                            borderTop: `1px solid ${colors.border}`,
-                            backgroundColor: colors.bg
-                        }}>
-                            {/* Input Box */}
+                    {!isHistoryOpen &&
+                        !['goal-selection', 'multi-select', 'dynamic-steps', 'dynamic-list'].includes(state.inputType) &&
+                        !(state.options && state.options.length > 0 && messageTyped) && (
                             <div style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '8px',
-                                backgroundColor: colors.bg,
-                                borderRadius: '15px',
-                                border: `1px solid ${colors.border}`,
-                                padding: '10px 12px',
-                                boxShadow: '0 2px 5px rgba(0,0,0,0.03)',
-                                transition: 'border 0.2s',
-                                position: 'relative'
-                            }}
-                                onClick={() => mainInputRef.current?.focus()}
-                                onMouseEnter={e => e.currentTarget.style.borderColor = isDark ? '#444' : '#d0d0d0'}
-                                onMouseLeave={e => e.currentTarget.style.borderColor = colors.border}
-                                onFocus={e => e.currentTarget.style.borderColor = isDark ? '#666' : '#a0a0a0'}
-                                onBlur={e => e.currentTarget.style.borderColor = colors.border}
-                            >
-                                <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
-                                    <textarea
-                                        ref={mainInputRef}
-                                        value={inputValue}
-                                        autoFocus
-                                        onChange={(e) => {
-                                            setInputValue(e.target.value);
-                                            resizeTextarea(e.target);
-                                        }}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter' && !e.shiftKey) {
-                                                e.preventDefault();
-                                                handleSendMessage();
-                                            }
-                                        }}
-                                        placeholder={t({ en: "Answer...", fr: "Répondez..." })}
-                                        rows={1}
-                                        style={{
-                                            width: '100%',
-                                            border: 'none',
-                                            outline: 'none',
-                                            resize: 'none',
-                                            fontSize: '15px',
-                                            lineHeight: '1.5',
-                                            maxHeight: '150px',
-                                            minHeight: '24px',
-                                            fontFamily: 'inherit',
-                                            color: colors.text,
-                                            backgroundColor: 'transparent',
-                                            opacity: (state.isTyping && !messageTyped) ? 0.6 : 1,
-                                            pointerEvents: (state.isTyping && !messageTyped) ? 'none' : 'auto'
-                                        }}
-                                    />
-                                </div>
-
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '4px' }}>
-                                    <div style={{ display: 'flex', gap: '2px' }}>
-                                        <button style={{ padding: '6px', background: 'transparent', border: 'none', cursor: 'pointer', color: colors.iconSecondary, borderRadius: '4px' }} title="Attach">
-                                            <Plus size={18} />
-                                        </button>
-
+                                padding: '12px 16px',
+                                borderTop: `1px solid ${colors.border}`,
+                                backgroundColor: colors.bg
+                            }}>
+                                {/* Input Box */}
+                                <div style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '8px',
+                                    backgroundColor: colors.bg,
+                                    borderRadius: '15px',
+                                    border: `1px solid ${colors.border}`,
+                                    padding: '10px 12px',
+                                    boxShadow: '0 2px 5px rgba(0,0,0,0.03)',
+                                    transition: 'border 0.2s',
+                                    position: 'relative'
+                                }}
+                                    onClick={() => mainInputRef.current?.focus()}
+                                    onMouseEnter={e => e.currentTarget.style.borderColor = isDark ? '#444' : '#d0d0d0'}
+                                    onMouseLeave={e => e.currentTarget.style.borderColor = colors.border}
+                                    onFocus={e => e.currentTarget.style.borderColor = isDark ? '#666' : '#a0a0a0'}
+                                    onBlur={e => e.currentTarget.style.borderColor = colors.border}
+                                >
+                                    <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                                        <textarea
+                                            ref={mainInputRef}
+                                            value={inputValue}
+                                            autoFocus
+                                            onChange={(e) => {
+                                                setInputValue(e.target.value);
+                                                resizeTextarea(e.target);
+                                            }}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' && !e.shiftKey) {
+                                                    e.preventDefault();
+                                                    handleSendMessage();
+                                                }
+                                            }}
+                                            placeholder={t({ en: "Answer...", fr: "Répondez..." })}
+                                            rows={1}
+                                            style={{
+                                                width: '100%',
+                                                border: 'none',
+                                                outline: 'none',
+                                                resize: 'none',
+                                                fontSize: '15px',
+                                                lineHeight: '1.5',
+                                                maxHeight: '150px',
+                                                minHeight: '24px',
+                                                fontFamily: 'inherit',
+                                                color: colors.text,
+                                                backgroundColor: 'transparent',
+                                                opacity: (state.isTyping && !messageTyped) ? 0.6 : 1,
+                                                pointerEvents: (state.isTyping && !messageTyped) ? 'none' : 'auto'
+                                            }}
+                                        />
                                     </div>
 
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <span style={{ fontSize: '12px', color: colors.textSecondary, fontWeight: '500' }}>Auto</span>
-                                        <button
-                                            onClick={handleSendMessage}
-                                            disabled={!inputValue.trim()}
-                                            style={{
-                                                width: '28px', height: '28px',
-                                                borderRadius: '50%',
-                                                backgroundColor: inputValue.trim() ? (isDark ? '#fff' : '#000') : (isDark ? '#333' : '#f0f0f0'),
-                                                border: 'none',
-                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                cursor: inputValue.trim() ? 'pointer' : 'default',
-                                                color: inputValue.trim() ? (isDark ? '#000' : '#fff') : (isDark ? '#666' : '#ccc'),
-                                                transition: 'all 0.2s'
-                                            }}
-                                        >
-                                            <ArrowUp size={16} strokeWidth={2.5} />
-                                        </button>
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '4px' }}>
+                                        <div style={{ display: 'flex', gap: '2px' }}>
+                                            <button style={{ padding: '6px', background: 'transparent', border: 'none', cursor: 'pointer', color: colors.iconSecondary, borderRadius: '4px' }} title="Attach">
+                                                <Plus size={18} />
+                                            </button>
+
+                                        </div>
+
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span style={{ fontSize: '12px', color: colors.textSecondary, fontWeight: '500' }}>Auto</span>
+                                            <button
+                                                onClick={handleSendMessage}
+                                                disabled={!inputValue.trim()}
+                                                style={{
+                                                    width: '28px', height: '28px',
+                                                    borderRadius: '50%',
+                                                    backgroundColor: inputValue.trim() ? (isDark ? '#fff' : '#000') : (isDark ? '#333' : '#f0f0f0'),
+                                                    border: 'none',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    cursor: inputValue.trim() ? 'pointer' : 'default',
+                                                    color: inputValue.trim() ? (isDark ? '#000' : '#fff') : (isDark ? '#666' : '#ccc'),
+                                                    transition: 'all 0.2s'
+                                                }}
+                                            >
+                                                <ArrowUp size={16} strokeWidth={2.5} />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
                 </motion.div>
             )}

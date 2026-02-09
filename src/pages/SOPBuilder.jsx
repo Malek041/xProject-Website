@@ -12,7 +12,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { db } from '../services/firebase';
-import { doc, setDoc, onSnapshot } from 'firebase/firestore';
+import { collection, doc, setDoc, onSnapshot, addDoc, updateDoc } from 'firebase/firestore';
 import { aiService } from '../services/aiService';
 
 const getTaskExamples = (responsibility = '', t) => {
@@ -291,38 +291,35 @@ const SOPBuilder = () => {
     useEffect(() => {
         if (!currentUser) return;
 
-        // Listen for remote changes
-        const unsub = onSnapshot(doc(db, 'users', currentUser.uid), (docSnap) => {
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                if (data.projects) {
-                    setProjects(prev => {
-                        // Prevent infinite loop by checking equality
-                        if (JSON.stringify(prev) !== JSON.stringify(data.projects)) {
-                            return data.projects;
-                        }
-                        return prev;
-                    });
+        // Listen for remote changes in subcollection
+        const projectsRef = collection(db, 'users', currentUser.uid, 'projects');
+        const unsub = onSnapshot(projectsRef, (snapshot) => {
+            if (snapshot.metadata.hasPendingWrites) return;
+
+            const loadedProjects = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+
+            // Sort by createdAt desc
+            loadedProjects.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+            setProjects(prev => {
+                if (JSON.stringify(prev) !== JSON.stringify(loadedProjects)) {
+                    console.log('Syncing projects from Firestore Subcollection');
+                    return loadedProjects;
                 }
-            } else {
-                // If it's a new user with no data, we might want to upload existing local projects?
-                // For now, we just start fresh or keep what's in state (which came from localStorage init)
-                if (projects.length > 0) {
-                    setDoc(doc(db, 'users', currentUser.uid), { projects }, { merge: true });
-                }
-            }
+                return prev;
+            });
         });
         return () => unsub();
     }, [currentUser]);
 
     // Persist changes
     useEffect(() => {
-        if (currentUser) {
-            if (projects.length > 0) {
-                // Debounce could be added here if needed
-                setDoc(doc(db, 'users', currentUser.uid), { projects }, { merge: true });
-            }
-        } else {
+        // Saving each project individually is handled in the effect below or specific actions
+        // Migration logic could go here if needed, but we'll assume fresh start for subcollection
+        if (!currentUser) {
             localStorage.setItem('hiro_projects', JSON.stringify(projects));
         }
     }, [projects, currentUser]);
@@ -330,34 +327,25 @@ const SOPBuilder = () => {
     // Auto-save current project state whenever relevant state changes
     useEffect(() => {
         if (!currentProjectId) return;
+        if (!currentUser) return; // Only auto-save to firestore if logged in
 
-        setProjects(prev => {
-            const index = prev.findIndex(p => String(p.id) === String(currentProjectId));
-            if (index === -1) return prev; // Project was likely deleted
+        const projectToSave = projects.find(p => String(p.id) === String(currentProjectId));
+        if (!projectToSave) return;
 
-            const currentTrackData = {
-                phase,
-                documentData,
-                expertState
-            };
+        // Debounce or just save
+        // For subcollection, we update the specific document
+        const projectRef = doc(db, 'users', currentUser.uid, 'projects', String(currentProjectId));
 
-            const updated = [...prev];
-            updated[index] = {
-                ...updated[index],
-                data: {
-                    phase,
-                    documentData,
-                    expertState,
-                    systemTrack
-                },
-                tracks: {
-                    ...(updated[index].tracks || {}),
-                    [systemTrack]: currentTrackData
-                }
-            };
-            return updated;
-        });
-    }, [phase, documentData, expertState, systemTrack, currentProjectId]);
+        // We only save the data that changed, but for simplicity, we save the whole project data
+        // Sanitize
+        const sanitizedProject = JSON.parse(JSON.stringify(projectToSave));
+        // Remove id from data if it's there, as it's the doc id
+        delete sanitizedProject.id;
+
+        setDoc(projectRef, sanitizedProject, { merge: true })
+            .catch(err => console.error("Error auto-saving project:", err));
+
+    }, [phase, documentData, expertState, systemTrack, currentProjectId, currentUser]);
 
     // Initialize
     useEffect(() => {
@@ -427,8 +415,24 @@ const SOPBuilder = () => {
             }
         };
 
-        setProjects(prev => [newProject, ...prev]);
-        setCurrentProjectId(newProject.id);
+        // For Firestore, we create a doc ref first to get ID, or let Firestore generate it
+        // We'll let Firestore generate it if it's new, but here we're using timestamp as ID for local sync
+        // Let's use string ID for consistency
+
+        if (currentUser) {
+            addDoc(collection(db, 'users', currentUser.uid, 'projects'), newProject)
+                .then(docRef => {
+                    // Update local state with the new ID if we want, but the snapshot listener will catch it
+                    // Actually, to switch immediately, we might want to set it
+                    console.log("New project created with ID:", docRef.id);
+                    setCurrentProjectId(docRef.id);
+                    // We don't need to manually setProjects because onSnapshot will fire
+                })
+                .catch(err => console.error("Error creating project:", err));
+        } else {
+            setProjects(prev => [newProject, ...prev]);
+            setCurrentProjectId(newProject.id);
+        }
 
         // Reset states for new project flow
         setIsGoalSelected(false);
@@ -1578,6 +1582,24 @@ const SOPBuilder = () => {
     }, [systemTrack, documentData.optimize]);
 
     const handleGoalSelect = (goalId) => {
+        // Show recommendation first
+        updateExpertWithThinking({
+            ...expertState,
+            isOpen: true,
+            isTyping: true,
+            message: t({
+                en: "**Recommendation**\n\nIt is recommended that you have a team of ≥ 3 members to systemize effectively.\n\nThis work takes time and concentration to produce good results.\n\nDo you want to continue?",
+                fr: "**Recommandation**\n\nIl est recommandé d'avoir une équipe de ≥ 3 membres pour systématiser efficacement.\n\nCe travail demande du temps et de la concentration pour produire de bons résultats.\n\nVoulez-vous continuer ?"
+            }),
+            inputType: null,
+            options: [
+                { label: t({ en: "Continue", fr: "Continuer" }), action: 'confirm_goal_start', value: goalId },
+                { label: t({ en: "Cancel", fr: "Annuler" }), action: 'close' }
+            ]
+        });
+    };
+
+    const confirmGoalStart = (goalId) => {
         setSelectedGoal(goalId);
         setIsGoalSelected(true);
         const track = goalId === 4 ? 'growth' : 'revenue';
@@ -1594,6 +1616,9 @@ const SOPBuilder = () => {
         switch (action) {
             case 'close':
                 setExpertState(prev => ({ ...prev, isOpen: false }));
+                break;
+            case 'confirm_goal_start':
+                confirmGoalStart(value);
                 break;
             case 'teach_phase':
                 startTeachingPhase(value, 0);

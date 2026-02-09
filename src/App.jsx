@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import Home from './pages/Home';
-import Application from './pages/Application';
+
 import Results from './pages/Results';
 import SignUp from './pages/SignUp';
 
@@ -15,14 +15,12 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { Navigate } from 'react-router-dom';
 
-const ProtectedRoute = ({ children, requireApplication = true }) => {
+const ProtectedRoute = ({ children }) => {
   const { currentUser } = useAuth();
 
   if (!currentUser) return <Navigate to="/signup" />;
 
-  if (requireApplication && currentUser.hasCompletedApplication === false) {
-    return <Navigate to="/application" />;
-  }
+  // Application check removed
 
   return children;
 };
@@ -57,11 +55,7 @@ function App() {
             <Layout>
               <Routes>
                 <Route path="/" element={<Home />} />
-                <Route path="/application" element={
-                  <ProtectedRoute requireApplication={false}>
-                    <Application />
-                  </ProtectedRoute>
-                } />
+                <Route path="/application" element={<Navigate to="/" replace />} />
                 <Route path="/results" element={<Results />} />
                 <Route path="/signup" element={<SignUp />} />
                 {/* <Route path="/projects" element={<Projects />} /> */}
