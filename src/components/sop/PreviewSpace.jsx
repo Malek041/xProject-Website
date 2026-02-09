@@ -2055,7 +2055,7 @@ const PreviewSpace = ({
                                                         gap: '24px'
                                                     }}>
                                                         {data.departments?.map((dept, idx) => {
-                                                            const deptSystems = data.extractionRegistry.filter(item => item.department === dept.name);
+                                                            const deptSystems = (data.extractionRegistry || []).filter(item => item.department === dept.name);
                                                             return (
                                                                 <div key={idx} style={{
                                                                     height: 'auto'
@@ -2210,7 +2210,7 @@ const PreviewSpace = ({
                                                                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                                                                             {editingSection === 'brainstorm' ? (
                                                                                 <textarea
-                                                                                    value={(editingSection === 'brainstorm' && editData?.departments ? ((editData.departments[deptIdx].subActivities && editData.departments[deptIdx].subActivities[resp]) || []) : subs).join('\n')}
+                                                                                    value={(Array.isArray(editingSection === 'brainstorm' && editData?.departments ? ((editData.departments[deptIdx].subActivities && editData.departments[deptIdx].subActivities[resp]) || []) : subs) ? (editingSection === 'brainstorm' && editData?.departments ? ((editData.departments[deptIdx].subActivities && editData.departments[deptIdx].subActivities[resp]) || []) : subs) : []).join('\n')}
                                                                                     onChange={(e) => {
                                                                                         const newDepts = [...editData.departments];
                                                                                         if (!newDepts[deptIdx].subActivities) newDepts[deptIdx].subActivities = {};

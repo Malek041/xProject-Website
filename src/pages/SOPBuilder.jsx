@@ -590,7 +590,11 @@ const SOPBuilder = () => {
             ...dept,
             subActivities: dept.subActivities || {}
         }));
-        setDocumentData(prev => ({ ...prev, departments: deptsWithSubActivities }));
+        setDocumentData(prev => ({
+            ...prev,
+            departments: deptsWithSubActivities,
+            extractionRegistry: prev.extractionRegistry || []
+        }));
 
         // Set phase for video demo (Extract phase has multiple videos)
         setCurrentPhaseForVideo('brainstorm');
@@ -1157,8 +1161,8 @@ const SOPBuilder = () => {
             updateExpertWithThinking({
                 ...expertState,
                 message: t({
-                    en: `Who's your dream client? (e.g. "Startup founders", "Real estate agents")`,
-                    fr: `Qui est votre client idéal ? (ex. : "Fondateurs de startups", "Agents immobiliers")`
+                    en: `Describe your Ideal client? (e.g. "Startup founders", "Real estate agents")`,
+                    fr: `Décrivez votre client idéal ? (ex. : "Fondateurs de startups", "Agents immobiliers")`
                 }),
                 inputType: 'text',
                 options: [],
