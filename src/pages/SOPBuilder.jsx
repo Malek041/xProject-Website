@@ -414,28 +414,40 @@ const SOPBuilder = () => {
             id: Date.now().toString(),
             name: 'New Project',
             createdAt: new Date().toISOString(),
-            data: {
-                phase: 'define',
-                systemTrack: 'revenue',
-                documentData: {
-                    ccf: {},
-                    departments: [],
-                    responsibilities: {},
-                    team: {},
-                    systems: [],
-                    activeExtractionPlan: {
-                        targetSystem: null,
-                        knowledgeableWorker: null,
-                        captureMethod: null,
-                        timeline: null,
-                        status: 'planning'
-                    },
-                    activeSystem: null,
-                    extractionRegistry: [],
-                    systemLibrary: [],
-                    integratePlan: {},
-                    optimize: { kpis: [], problems: [] }
-                }
+            phase: 'define',
+            systemTrack: 'revenue',
+            expertState: {
+                isOpen: true,
+                message: t({ en: "Welcome to hiro. What's your Goal today?", fr: "Bienvenue sur hiro. Quel est votre objectif aujourd'hui ?" }),
+                inputType: 'goal-selection',
+                inputAction: 'select_goal',
+                options: [],
+                isTyping: false,
+                isThinking: false,
+                history: [],
+                mode: 'default',
+                teachingPhase: null,
+                teachingStep: 0,
+                teachingContextPhase: null
+            },
+            documentData: {
+                ccf: {},
+                departments: [],
+                responsibilities: {},
+                team: {},
+                systems: [],
+                activeExtractionPlan: {
+                    targetSystem: null,
+                    knowledgeableWorker: null,
+                    captureMethod: null,
+                    timeline: null,
+                    status: 'planning'
+                },
+                activeSystem: null,
+                extractionRegistry: [],
+                systemLibrary: [],
+                integratePlan: {},
+                optimize: { kpis: [], problems: [] }
             }
         };
 
@@ -471,7 +483,7 @@ const SOPBuilder = () => {
         setShowIntro(false); // Don't show intro immediately, let user pick goal first
         setSystemTrack('revenue');
         setPhase('define');
-        setDocumentData(newProject.data.documentData);
+        setDocumentData(newProject.documentData);
         setExpertState({
             isOpen: true,
             message: t({ en: "Welcome to hiro. What's your Goal today?", fr: "Bienvenue sur hiro. Quel est votre objectif aujourd'hui ?" }),
@@ -494,20 +506,21 @@ const SOPBuilder = () => {
 
         setCurrentProjectId(projectId);
 
-        // Restore state from project data
-        // If it's an old project that doesn't have the full data structure yet, 
-        // fallback to defaults
-        const data = project.data || {};
-        const restoredPhase = data.phase || 'define';
-        const restoredSystemTrack = data.systemTrack || 'revenue';
+        // Normalize data source: check root, then check data property
+        // The project might be in the new flat format (root properties) or old nested format (data property)
+        // Auto-save logic writes to root, so we check there first.
+        const sourceData = (project.documentData || project.expertState) ? project : (project.data || {});
+
+        const restoredPhase = sourceData.phase || 'define';
+        const restoredSystemTrack = sourceData.systemTrack || 'revenue';
 
         // CRITICAL FIX: Normalize documentData against initial schema
         // Merging prevents "undefined" errors if saved data is partial
         const restoredDocData = {
             ...initialDocumentData,
-            ...(data.documentData || {}),
-            departments: (data.documentData?.departments || []),
-            extractionRegistry: (data.documentData?.extractionRegistry || [])
+            ...(sourceData.documentData || {}),
+            departments: (sourceData.documentData?.departments || []),
+            extractionRegistry: (sourceData.documentData?.extractionRegistry || [])
         };
 
         setSystemTrack(restoredSystemTrack);
@@ -521,16 +534,12 @@ const SOPBuilder = () => {
         setExpertState(prev => ({
             ...prev,
             isOpen: true, // Force open to be safe
-            ...(data.expertState || {}),
-            options: data.expertState?.options || [], // Ensure array
+            ...(sourceData.expertState || {}),
+            options: sourceData.expertState?.options || [], // Ensure array
         }));
 
         // Since it's an existing project, we skip the goal selection and intro
-        setIsGoalSelected(true);
-        setHasAnsweredFirstQuestion(true);
         setIsPhaseStarted(true);
-        setIntroFinished(true);
-        setShowIntro(false);
     };
 
     const handleRemoveProject = (projectId) => {
