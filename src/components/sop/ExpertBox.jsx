@@ -6,7 +6,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 import ThinkingDots from './ThinkingDots';
 
-const ExpertBox = ({ state, onAction, onSubmit, phase, activeSystemName, projects = [], onSelectProject, onRemoveProject, onTypingComplete, rightOffset = 24, docked = false }) => {
+const ExpertBox = ({ state, onAction, onSubmit, phase, activeSystemName, projects = [], onSelectProject, onRemoveProject, onTypingComplete, onConversationsUpdate, rightOffset = 24, docked = false }) => {
     const { t } = useLanguage();
     const { theme } = useTheme();
     const isDark = theme === 'dark';
@@ -29,9 +29,18 @@ const ExpertBox = ({ state, onAction, onSubmit, phase, activeSystemName, project
 
     // --- State Management for Multi-Chat ---
     // Start with one "main" conversation that receives updates from the parent 'state' prop
-    const [conversations, setConversations] = useState([
+    // OR load from state
+    const [conversations, setConversations] = useState(state.conversations || [
         { id: 'main', title: 'Current Task', messages: [], type: 'main', date: new Date() }
     ]);
+
+    // Persist up to parent whenever conversations change
+    useEffect(() => {
+        if (onConversationsUpdate) {
+            onConversationsUpdate(conversations);
+        }
+    }, [conversations, onConversationsUpdate]);
+
     const [activeConversationId, setActiveConversationId] = useState('main');
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 

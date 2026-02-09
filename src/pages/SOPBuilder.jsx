@@ -425,6 +425,7 @@ const SOPBuilder = () => {
                 isTyping: false,
                 isThinking: false,
                 history: [],
+                conversations: [], // Initialize list of conversations
                 mode: 'default',
                 teachingPhase: null,
                 teachingStep: 0,
@@ -2136,6 +2137,13 @@ const SOPBuilder = () => {
                         projects={projects}
                         onSelectProject={handleSelectProject}
                         onRemoveProject={handleRemoveProject}
+                        onConversationsUpdate={(newConvs) => {
+                            setExpertState(prev => {
+                                // Only update if actually different to avoid infinite loop
+                                if (JSON.stringify(prev.conversations) === JSON.stringify(newConvs)) return prev;
+                                return { ...prev, conversations: newConvs };
+                            });
+                        }}
                         onTypingComplete={() => {
                             // Only show if not already shown for this project
                             const alreadyShown = documentData.shownVideos?.includes(currentPhaseForVideo);
