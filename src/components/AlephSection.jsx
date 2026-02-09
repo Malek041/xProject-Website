@@ -89,7 +89,7 @@ const AlephSection = () => {
     ];
 
     return (
-        <section style={{
+        <section id="aleph-section" style={{
             padding: isMobile ? '3rem 1.5rem' : '5rem 0 2.5rem',
             backgroundColor: 'var(--color-bg-base)',
             overflow: 'hidden',

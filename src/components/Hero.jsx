@@ -186,7 +186,12 @@ const Hero = () => {
                         {t({ en: "Get hiro free", fr: "Obtenir hiro gratuitement" })}
                     </Link>
                     <button
-                        onClick={() => navigate('/application')}
+                        onClick={() => {
+                            const element = document.getElementById('aleph-section');
+                            if (element) {
+                                element.scrollIntoView({ behavior: 'smooth' });
+                            }
+                        }}
                         style={{
                             padding: isMobile ? '0.6rem 1rem' : '0.8rem 1.5rem',
                             fontSize: isMobile ? '0.9rem' : '1.1rem',
@@ -202,7 +207,7 @@ const Hero = () => {
                         onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(2, 101, 210, 0.1)'}
                         onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'var(--color-notion-light-blue)'}
                     >
-                        {t({ en: "Test your Readiness", fr: "Testez votre Readiness" })}
+                        {t({ en: "Learn hiro Aleph1.0", fr: "Découvrir hiro Aleph1.0" })}
                     </button>
                 </div>
 
