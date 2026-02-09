@@ -329,27 +329,46 @@ const SOPBuilder = () => {
     // Auto-save current project state whenever relevant state changes
     useEffect(() => {
         if (!currentProjectId) return;
-        if (!currentUser) return; // Only auto-save to firestore if logged in
 
-        const projectToSave = projects.find(p => String(p.id) === String(currentProjectId));
-        if (!projectToSave) return;
+        setProjects(prev => {
+            const index = prev.findIndex(p => String(p.id) === String(currentProjectId));
+            if (index === -1) return prev; // Project likely deleted
 
-        // Debounce or just save
-        // For top-level collection, update the specific document
-        const projectRef = doc(db, 'projects', String(currentProjectId));
+            const currentTrackData = {
+                phase,
+                documentData,
+                expertState
+            };
 
-        // We only save the data that changed, but for simplicity, we save the whole project data
-        // Sanitize
-        const sanitizedProject = JSON.parse(JSON.stringify(projectToSave));
-        // Remove id from data if it's there, as it's the doc id
-        delete sanitizedProject.id;
+            const updated = [...prev];
+            const updatedProject = {
+                ...updated[index],
+                data: {
+                    phase,
+                    documentData,
+                    expertState,
+                    systemTrack
+                },
+                tracks: {
+                    ...(updated[index].tracks || {}),
+                    [systemTrack]: currentTrackData
+                }
+            };
+            updated[index] = updatedProject;
 
-        // Ensure userId is present (for safety)
-        sanitizedProject.userId = currentUser.uid;
+            // Save to Firestore if user is logged in
+            if (currentUser) {
+                const projectRef = doc(db, 'projects', String(currentProjectId));
+                const sanitizedProject = JSON.parse(JSON.stringify(updatedProject));
+                delete sanitizedProject.id;
+                sanitizedProject.userId = currentUser.uid;
 
-        setDoc(projectRef, sanitizedProject, { merge: true })
-            .catch(err => console.error("Error auto-saving project:", err));
+                setDoc(projectRef, sanitizedProject, { merge: true })
+                    .catch(err => console.error("Error auto-saving project:", err));
+            }
 
+            return updated;
+        });
     }, [phase, documentData, expertState, systemTrack, currentProjectId, currentUser]);
 
     // Initialize
